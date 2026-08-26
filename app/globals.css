@@ -1,0 +1,308 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+/* Class-based dark mode, driven by next-themes. */
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------------------
+   reMeet design tokens
+
+   Direction: soft glass + blue accent. A lavender page field, frosted
+   surfaces, and electric blue held back for actions and data only.
+
+   The vital-* colors are functional, not decorative: a hospital UI has to
+   encode state unambiguously (in-stock vs expiring vs expired, paid vs
+   overdue), so they're part of the structure.
+--------------------------------------------------------------------------- */
+
+:root {
+  --bg: #eef0fa;
+  --bg-deep: #e4e8f7;
+
+  --surface: rgb(255 255 255 / 0.72);
+  --surface-strong: rgb(255 255 255 / 0.88);
+  --surface-solid: #ffffff;
+
+  --ink: #10131c;
+  --ink-soft: #5a6178;
+  --ink-faint: #8a91a8;
+
+  --line: rgb(16 19 28 / 0.08);
+  --line-strong: rgb(16 19 28 / 0.16);
+
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-soft: rgb(37 99 235 / 0.08);
+  --accent-ink: #ffffff;
+
+  --vital-ok: #0e9f6e;
+  --vital-warn: #d97706;
+  --vital-crit: #dc2626;
+
+  --chart-1: #2563eb;
+  --chart-2: #7c3aed;
+  --chart-3: #0e9f6e;
+  --chart-4: #d97706;
+  --chart-5: #db2777;
+
+  --shadow-glass: 0 1px 2px rgb(16 19 28 / 0.04), 0 8px 24px -8px rgb(16 19 28 / 0.10);
+  --shadow-lift: 0 2px 4px rgb(16 19 28 / 0.05), 0 16px 40px -12px rgb(16 19 28 / 0.16);
+
+  --radius: 0.875rem;
+
+  /* Font families are named here rather than injected by next/font, so the app
+     builds with no network access. The indirection is kept on purpose: adopting
+     next/font later means setting these three variables on <html> and changing
+     nothing else. */
+  --font-instrument-sans: 'Instrument Sans';
+  --font-inter: 'Inter';
+  --font-plex-mono: 'IBM Plex Mono';
+}
+
+.dark {
+  --bg: #0b0e17;
+  --bg-deep: #070912;
+
+  --surface: rgb(255 255 255 / 0.05);
+  --surface-strong: rgb(255 255 255 / 0.09);
+  --surface-solid: #131824;
+
+  --ink: #e8eaf4;
+  --ink-soft: #9aa3bd;
+  --ink-faint: #6b7490;
+
+  --line: rgb(255 255 255 / 0.10);
+  --line-strong: rgb(255 255 255 / 0.20);
+
+  --accent: #4f82ff;
+  --accent-hover: #6b95ff;
+  --accent-soft: rgb(79 130 255 / 0.14);
+  --accent-ink: #080c16;
+
+  --vital-ok: #34d399;
+  --vital-warn: #fbbf24;
+  --vital-crit: #f87171;
+
+  --chart-1: #4f82ff;
+  --chart-2: #a78bfa;
+  --chart-3: #34d399;
+  --chart-4: #fbbf24;
+  --chart-5: #f472b6;
+
+  --shadow-glass: 0 1px 2px rgb(0 0 0 / 0.30), 0 8px 24px -8px rgb(0 0 0 / 0.50);
+  --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.35), 0 16px 40px -12px rgb(0 0 0 / 0.60);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-deep: var(--bg-deep);
+  --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
+  --color-surface-solid: var(--surface-solid);
+
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+
+  --color-vital-ok: var(--vital-ok);
+  --color-vital-warn: var(--vital-warn);
+  --color-vital-crit: var(--vital-crit);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Display: Instrument Sans — tight, geometric, architectural.
+     Body:    Inter — legibility in dense clinical tables.
+     Mono:    IBM Plex Mono — unambiguous 0/O and 1/l/I, which matters
+              when a screen reads "500mg" or a dosage of "1-0-1". */
+  --font-display: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  --radius-card: var(--radius);
+
+  --shadow-glass: var(--shadow-glass);
+  --shadow-lift: var(--shadow-lift);
+}
+
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Display sizes get negative tracking to match the compression in the
+     reference screenshots. Applied via the .display-* helpers below. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+  }
+
+  /* Numbers must never reflow when they tick. */
+  .tabular,
+  table td,
+  table th {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* A single, consistent, always-visible focus ring. */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+}
+
+@layer components {
+  /* The frosted surface used for every card, panel, and sheet:
+     translucent fill + blur + a 1px inner white border for the glass edge. */
+  .glass {
+    background-color: var(--surface);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-glass), inset 0 1px 0 0 rgb(255 255 255 / 0.5);
+    border-radius: var(--radius);
+  }
+
+  .dark .glass {
+    box-shadow: var(--shadow-glass), inset 0 1px 0 0 rgb(255 255 255 / 0.06);
+  }
+
+  .glass-strong {
+    background-color: var(--surface-strong);
+  }
+
+  /* Eyebrow label — small, tracked-out, mono. Used to name a section
+     without competing with its heading. */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Motion
+
+   Every animation in the app is gated on this. GSAP timelines also check
+   prefers-reduced-motion in useGsap, so motion is disabled at both layers.
+--------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Anything staged for a GSAP reveal must be visible if motion is off. */
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Same rule for the pulse traces: fully drawn, never a blank line. */
+  [data-pulse] {
+    stroke-dashoffset: 0 !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Print — prescriptions and invoices
+
+   A5 at 12mm margins. App chrome is dropped entirely so the sheet prints
+   as a clinical document, not a screenshot of a web page.
+--------------------------------------------------------------------------- */
+@page {
+  size: A5;
+  margin: 12mm;
+}
+
+@media print {
+  :root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --ink: #000000;
+    --ink-soft: #333333;
+    --line: #cccccc;
+    --accent: #000000;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Hide everything that isn't the sheet. */
+  [data-print='hide'] {
+    display: none !important;
+  }
+
+  [data-print='sheet'] {
+    position: static !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  .glass {
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: 1px solid #cccccc !important;
+  }
+
+  /* Never split a medicine row or a signature block across pages. */
+  tr,
+  [data-print='keep'] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  a {
+    text-decoration: none !important;
+    color: #000000 !important;
+  }
+}
