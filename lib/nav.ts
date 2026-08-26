@@ -7,6 +7,7 @@ import {
   Pill,
   Receipt,
   ScanLine,
+  ShieldCheck,
   Stethoscope,
   Users,
 } from 'lucide-react'
@@ -38,6 +39,7 @@ export const NAV: NavGroup[] = [
         icon: LayoutDashboard,
         roles: ['admin', 'staff'],
       },
+      { href: '/admin/verifications', label: 'Doctor Approvals', icon: ShieldCheck, roles: ['admin'] },
       { href: '/portal', label: 'My clinic', icon: Activity, roles: ['doctor'] },
       { href: '/analytics', label: 'Analytics', icon: BarChart3, roles: ['admin'] },
     ],

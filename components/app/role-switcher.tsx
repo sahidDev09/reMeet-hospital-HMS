@@ -1,5 +1,6 @@
 'use client'
 
+import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
 import { setReviewRole } from '@/app/actions/role'
@@ -15,10 +16,17 @@ import type { Role } from '@/lib/data/types'
  * offers, not what a server would allow. It disappears in production builds.
  */
 export function RoleSwitcher({ role }: { role: Role }) {
+  const { user } = useUser()
   const router = useRouter()
   const [pending, startTransition] = React.useTransition()
 
   if (process.env.NODE_ENV === 'production') return null
+
+  const email = user?.primaryEmailAddress?.emailAddress?.toLowerCase()
+  const isAdminAccount = email === 'iambotforwork72@gmail.com' || role === 'admin'
+
+  // Administrator accounts (e.g. iambotforwork72@gmail.com) only see Administrator and Front desk
+  const availableRoles = isAdminAccount ? ROLES.filter((r) => r !== 'doctor') : ROLES
 
   return (
     <label className="flex items-center gap-2" title="Development only — not access control">
@@ -36,7 +44,7 @@ export function RoleSwitcher({ role }: { role: Role }) {
           })
         }}
       >
-        {ROLES.map((r) => (
+        {availableRoles.map((r) => (
           <option key={r} value={r}>
             {ROLE_LABEL[r]}
           </option>

@@ -1,7 +1,9 @@
+import { Suspense } from 'react'
 import type { Metadata, Viewport } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
 import { Toaster } from 'sonner'
 import { ThemeProvider } from '@/components/theme-provider'
+import { OnboardingModal } from '@/components/auth/onboarding-modal'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -42,6 +44,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <body className="min-h-dvh bg-bg text-ink antialiased">
           <ThemeProvider>
             {children}
+            <Suspense fallback={null}>
+              <OnboardingModal />
+            </Suspense>
             <Toaster
               position="bottom-right"
               toastOptions={{
