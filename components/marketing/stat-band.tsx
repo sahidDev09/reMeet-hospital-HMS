@@ -1,51 +1,204 @@
-import { PulseLine } from '@/components/brand/pulse-line'
-import { CountUp } from '@/components/motion/count-up'
-import { Reveal } from '@/components/motion/reveal'
-import { CURRENCY } from '@/lib/format'
+'use client'
 
-/**
- * The numbers are read from the same data layer the dashboard uses, so this band
- * cannot quietly become marketing fiction while the product says something else.
- */
-export function StatBand({
-  patients,
-  prescriptions,
-  medicines,
-  collectedThisMonth,
-}: {
-  patients: number
-  prescriptions: number
-  medicines: number
-  collectedThisMonth: number
-}) {
-  const stats = [
-    { label: 'Patient records', value: patients, suffix: '' },
-    { label: 'Prescriptions issued', value: prescriptions, suffix: '' },
-    { label: 'Medicines stocked', value: medicines, suffix: '' },
-    {
-      label: 'Collected this month',
-      value: collectedThisMonth,
-      prefix: `${CURRENCY.symbol} `,
-    },
-  ]
+import Image from 'next/image'
+import Link from 'next/link'
+import { User } from 'lucide-react'
+import { gsap } from '@/components/motion/gsap'
+import { useGsap } from '@/components/motion/use-gsap'
+
+export type StatBandProps = {
+  patients?: number
+  prescriptions?: number
+  medicines?: number
+  collectedThisMonth?: number
+  brandName?: string
+}
+
+export function StatBand({ brandName = 'SlavutMedic' }: StatBandProps) {
+  const scope = useGsap<HTMLElement>((el) => {
+    const eyebrow = el.querySelector('[data-anim="eyebrow"]')
+    const heading = el.querySelector('[data-anim="heading"]')
+    const badgeTech = el.querySelector('[data-anim="badge-tech"]')
+    const badgeAvatars = el.querySelector('[data-anim="badge-avatars"]')
+    const subtext = el.querySelector('[data-anim="subtext"]')
+    const cta = el.querySelector('[data-anim="cta"]')
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: el,
+        start: 'top 80%',
+        toggleActions: 'play none none none',
+      },
+      defaults: { ease: 'power3.out' },
+    })
+
+    if (eyebrow) {
+      tl.fromTo(
+        eyebrow,
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.75 },
+        0,
+      )
+    }
+
+    if (heading) {
+      tl.fromTo(
+        heading,
+        { opacity: 0, y: 35 },
+        { opacity: 1, y: 0, duration: 1.0, ease: 'power3.out' },
+        0.15,
+      )
+    }
+
+    if (badgeTech) {
+      tl.fromTo(
+        badgeTech,
+        { opacity: 0, scale: 0.5, rotate: -8 },
+        { opacity: 1, scale: 1, rotate: 0, duration: 0.8, ease: 'back.out(2)' },
+        0.4,
+      )
+    }
+
+    if (badgeAvatars) {
+      tl.fromTo(
+        badgeAvatars,
+        { opacity: 0, scale: 0.5, x: -8 },
+        { opacity: 1, scale: 1, x: 0, duration: 0.8, ease: 'back.out(2)' },
+        0.55,
+      )
+    }
+
+    if (subtext) {
+      tl.fromTo(
+        subtext,
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.8 },
+        0.7,
+      )
+    }
+
+    if (cta) {
+      tl.fromTo(
+        cta,
+        { opacity: 0, y: 25, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.85, ease: 'back.out(1.6)' },
+        0.85,
+      )
+    }
+  })
 
   return (
-    <section className="border-y border-line bg-bg-deep/50">
-      <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8">
-        <Reveal stagger className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => (
-            <div key={stat.label} data-reveal className="flex flex-col gap-2">
-              <CountUp
-                value={stat.value}
-                prefix={stat.prefix}
-                onScroll
-                className="font-display text-[2.25rem] font-semibold leading-none tracking-[-0.035em] text-ink tabular"
-              />
-              <PulseLine variant="rule" className="h-2 w-full max-w-24 text-accent/50" />
-              <p className="text-sm text-ink-soft">{stat.label}</p>
-            </div>
-          ))}
-        </Reveal>
+    <section
+      ref={scope}
+      className="relative overflow-hidden border-y border-line/60 bg-gradient-to-b from-bg/40 via-bg to-bg/80 py-20 sm:py-28 lg:py-32"
+    >
+      {/* Honeycomb decorative pattern (Left) */}
+      <svg
+        aria-hidden="true"
+        className="pointer-events-none absolute -left-12 top-1/2 h-[380px] w-[320px] -translate-y-1/2 select-none opacity-20 dark:opacity-10 text-accent"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        viewBox="0 0 300 400"
+      >
+        <defs>
+          <pattern id="hex-pattern-left" width="56" height="96" patternUnits="userSpaceOnUse">
+            <path d="M28 0 L56 16 L56 48 L28 64 L0 48 L0 16 Z M28 64 L56 80 L56 112 L28 128 L0 112 L0 80 Z" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#hex-pattern-left)" />
+      </svg>
+
+      {/* Honeycomb decorative pattern (Right) */}
+      <svg
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-12 top-1/2 h-[380px] w-[320px] -translate-y-1/2 select-none opacity-20 dark:opacity-10 text-accent"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        viewBox="0 0 300 400"
+      >
+        <defs>
+          <pattern id="hex-pattern-right" width="56" height="96" patternUnits="userSpaceOnUse">
+            <path d="M28 0 L56 16 L56 48 L28 64 L0 48 L0 16 Z M28 64 L56 80 L56 112 L28 128 L0 112 L0 80 Z" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#hex-pattern-right)" />
+      </svg>
+
+      <div className="relative mx-auto max-w-5xl px-5 sm:px-8">
+        {/* Eyebrow Label */}
+        <div data-anim="eyebrow" className="mb-6 flex items-center justify-center gap-3.5">
+          <span className="h-px w-9 bg-ink-faint/30 dark:bg-ink-faint/20" />
+          <span className="font-mono text-[0.6875rem] font-medium uppercase tracking-[0.2em] text-ink-faint">
+            {brandName}
+          </span>
+          <span className="h-px w-9 bg-ink-faint/30 dark:bg-ink-faint/20" />
+        </div>
+
+        {/* Main Headline Statement */}
+        <h2
+          data-anim="heading"
+          className="mx-auto max-w-4xl text-center font-display text-[1.85rem] font-normal leading-[1.32] tracking-[-0.03em] text-ink/75 dark:text-ink/85 sm:text-4xl md:text-[2.75rem] md:leading-[1.26]"
+        >
+          <span className="font-semibold text-ink">We combine innovative</span>{' '}
+          <span
+            data-anim="badge-tech"
+            className="inline-flex items-center justify-center align-middle mx-1.5 px-3 py-1 -mt-1 rounded-full border border-sky-300/60 dark:border-sky-700/50 bg-gradient-to-r from-sky-100/90 to-blue-100/80 dark:from-sky-950/60 dark:to-blue-900/40 shadow-sm"
+          >
+            <span className="text-base sm:text-lg leading-none select-none">💡</span>
+          </span>{' '}
+          <span>technologies with a human approach to make every patient</span>{' '}
+          <span
+            data-anim="badge-avatars"
+            className="inline-flex items-center align-middle mx-1.5 -space-x-2.5 -mt-1 rounded-full p-0.5 border border-white/80 dark:border-white/15 bg-white/70 dark:bg-surface-solid shadow-sm"
+          >
+            <Image
+              src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=96&h=96&q=80"
+              alt="Medical Team Member 1"
+              width={28}
+              height={28}
+              className="size-7 rounded-full object-cover ring-2 ring-white dark:ring-surface-solid"
+            />
+            <Image
+              src="https://images.unsplash.com/photo-1594824813620-3b08e5e6df7e?auto=format&fit=crop&w=96&h=96&q=80"
+              alt="Medical Team Member 2"
+              width={28}
+              height={28}
+              className="size-7 rounded-full object-cover ring-2 ring-white dark:ring-surface-solid"
+            />
+            <Image
+              src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=96&h=96&q=80"
+              alt="Medical Team Member 3"
+              width={28}
+              height={28}
+              className="size-7 rounded-full object-cover ring-2 ring-white dark:ring-surface-solid"
+            />
+          </span>{' '}
+          <span className="font-semibold text-ink">feel confident and calm.</span>
+        </h2>
+
+        {/* Subtitle Description */}
+        <p
+          data-anim="subtext"
+          className="mx-auto mt-7 max-w-2xl text-center text-sm leading-relaxed text-ink-soft sm:text-base"
+        >
+          Our hospital is <strong className="font-semibold text-ink">a space of trust</strong>,
+          modern medicine and care, based on many years of experience and love for people
+        </p>
+
+        {/* Action Button */}
+        <div data-anim="cta" className="mt-8 flex justify-center">
+          <Link
+            href="#doctors"
+            className="group relative inline-flex items-center gap-3.5 rounded-full bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 p-1.5 pl-6 text-sm font-medium text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/35 hover:scale-[1.03] active:scale-[0.98]"
+          >
+            <span>More about us</span>
+            <span className="flex size-8 items-center justify-center rounded-full bg-white text-blue-600 shadow-md transition-transform duration-300 group-hover:rotate-12">
+              <User className="size-4 stroke-[2.5]" />
+            </span>
+          </Link>
+        </div>
       </div>
     </section>
   )
