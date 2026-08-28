@@ -3,28 +3,16 @@
 import Image from 'next/image'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
-import { PulseLine } from '@/components/brand/pulse-line'
 import { gsap } from '@/components/motion/gsap'
 import { useGsap } from '@/components/motion/use-gsap'
 import { CountUp } from '@/components/motion/count-up'
 import { Button } from '@/components/ui/button'
 import { CURRENCY } from '@/lib/format'
 
-export type HeroQueueRow = {
-  queueNo: number
-  patient: string
-  doctor: string
-  department: string
-  start: string
-  state: 'In consult' | 'Waiting'
-}
-
 export type HeroProps = {
   revenueToday: number
   consultsToday: number
   departmentCount: number
-  revenueTrend?: number[]
-  queue?: HeroQueueRow[]
 }
 
 export function Hero({
@@ -34,21 +22,7 @@ export function Hero({
 }: HeroProps) {
   const scope = useGsap<HTMLDivElement>((el) => {
     const q = gsap.utils.selector(el)
-    const trace = el.querySelector<SVGPathElement>('[data-pulse]')
-    const traceLength = Number(trace?.dataset.length ?? 0)
-
     const dnaParallax = el.querySelector<HTMLElement>('[data-dna-parallax]')
-
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
-
-    if (trace) {
-      tl.fromTo(
-        trace,
-        { strokeDashoffset: traceLength },
-        { strokeDashoffset: 0, duration: 1.5, ease: 'power2.inOut' },
-        0,
-      )
-    }
 
     if (dnaParallax) {
       gsap.to(dnaParallax, {
@@ -63,6 +37,7 @@ export function Hero({
       })
     }
 
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
     tl.from(q('[data-line]'), { yPercent: 112, duration: 0.9, stagger: 0.08 }, 0.2)
       .from(q('[data-fade]'), { opacity: 0, y: 18, duration: 0.75, stagger: 0.09 }, 0.6)
   })
