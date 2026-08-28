@@ -1,11 +1,10 @@
-import { DepartmentGrid } from '@/components/marketing/department-grid'
-import { DoctorRail } from '@/components/marketing/doctor-rail'
-import { Hero, type HeroQueueRow } from '@/components/marketing/hero'
-import { SiteFooter } from '@/components/marketing/site-footer'
-import { StatBand } from '@/components/marketing/stat-band'
-import { VisitFlow } from '@/components/marketing/visit-flow'
+import { DepartmentGrid } from '@/components/Landing/department-grid'
+import { DoctorRail } from '@/components/Landing/doctor-rail'
+import { Hero } from '@/components/Landing/hero'
+import { SiteFooter } from '@/components/Landing/site-footer'
+import { StatBand } from '@/components/Landing/stat-band'
+import { VisitFlow } from '@/components/Landing/visit-flow'
 import { dashboardStats, revenueSeries } from '@/lib/data/analytics'
-import { listAppointments, liveQueue } from '@/lib/data/appointments'
 import { listDepartments, listDoctors } from '@/lib/data/doctors'
 import { countPatients } from '@/lib/data/patients'
 import { listMedicines } from '@/lib/data/pharmacy'
@@ -20,33 +19,16 @@ import { listPrescriptions } from '@/lib/data/prescriptions'
  * a real hospital with no edits here.
  */
 export default async function LandingPage() {
-  const [stats, departments, doctors, queue, patients, prescriptions, medicines, revenue30] =
+  const [stats, departments, doctors, patients, prescriptions, medicines, revenue30] =
     await Promise.all([
       dashboardStats(),
       listDepartments(),
       listDoctors(),
-      liveQueue(),
       countPatients(),
       listPrescriptions({ pageSize: 1 }),
       listMedicines({ pageSize: 1 }),
       revenueSeries(30),
     ])
-
-  // The board shows who is actually waiting. On a quiet morning nobody has been
-  // checked in yet, so fall back to today's booked list rather than an empty card.
-  const board =
-    queue.length > 0
-      ? queue
-      : await listAppointments({ on: new Date().toISOString().slice(0, 10) })
-
-  const queueRows: HeroQueueRow[] = board.slice(0, 4).map((a, i) => ({
-    queueNo: a.queueNo ?? i + 1,
-    patient: a.patient.name,
-    doctor: a.doctor.name,
-    department: a.department,
-    start: a.start,
-    state: a.status === 'in-consult' ? 'In consult' : 'Waiting',
-  }))
 
   const doctorCounts = doctors.reduce<Record<string, number>>((acc, doc) => {
     acc[doc.department] = (acc[doc.department] ?? 0) + 1
@@ -59,8 +41,6 @@ export default async function LandingPage() {
         revenueToday={stats.revenueToday}
         consultsToday={stats.appointmentsToday}
         departmentCount={departments.length}
-        revenueTrend={stats.revenueTrend}
-        queue={queueRows}
       />
 
       <StatBand
