@@ -54,22 +54,14 @@ export function DepartmentGrid({
   return (
     <section id="departments" className="relative mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28">
       {/* Top Header Section */}
-      <div className="mb-12 flex flex-col justify-between gap-6 md:flex-row md:items-end">
-        <div className="max-w-2xl">
-          <p className="mb-2.5 font-mono text-[0.75rem] font-semibold uppercase tracking-[0.25em] text-ink-faint">
-            SERVICES & DEPARTMENTS
-          </p>
-          <h2 className="font-display text-3xl font-semibold tracking-[-0.03em] text-ink sm:text-4xl lg:text-5xl lg:leading-[1.15]">
-            Specialised healthcare{' '}
-            <span className="font-serif italic font-normal text-ink/80 dark:text-ink/90">
-              tailored for you.
-            </span>
-          </h2>
-        </div>
-
-        <p className="max-w-md text-sm leading-relaxed text-ink-soft sm:text-base">
-          Six departments connected by a single medical record. Every referral carries full diagnosis
-          history, vitals, and ongoing prescriptions without ever restarting a form.
+      <div className="mb-10 flex flex-col gap-3">
+        <p className="eyebrow text-accent">Departments</p>
+        <h2 className="max-w-xl font-display text-3xl font-semibold tracking-[-0.03em] text-ink sm:text-4xl">
+          Six departments, one patient file between them.
+        </h2>
+        <p className="max-w-xl text-sm leading-relaxed text-ink-soft">
+          A referral from Family Medicine to Cardiology carries the history, the vitals and the
+          current medication with it. Nobody starts a new form.
         </p>
       </div>
 
