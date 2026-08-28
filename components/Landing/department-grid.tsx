@@ -139,7 +139,7 @@ export function DepartmentGrid({
                 <Link
                   href={`/appointments?department=${dept.code}`}
                   aria-label={`Book appointment in ${dept.name}`}
-                  className="group/btn inline-flex size-10 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 text-white shadow-md shadow-emerald-600/25 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-emerald-600/40 hover:brightness-110 active:scale-95"
+                  className="group/btn inline-flex size-10 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 via-blue-500 to-teal-400 text-white shadow-md shadow-emerald-600/25 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-emerald-600/40 hover:brightness-110 active:scale-95"
                 >
                   <ArrowRight className="size-4 stroke-[2.4] transition-transform duration-300 group-hover/btn:translate-x-0.5" />
                 </Link>
