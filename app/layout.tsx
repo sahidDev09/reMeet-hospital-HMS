@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import type { Metadata, Viewport } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
+import { clerkLocalization } from '@/lib/clerk-appearance'
 import { Toaster } from 'sonner'
 import { ThemeProvider } from '@/components/theme-provider'
 import { OnboardingModal } from '@/components/auth/onboarding-modal'
@@ -25,7 +26,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider localization={clerkLocalization}>
+
       <html lang="en" suppressHydrationWarning>
         <head>
           {/*
