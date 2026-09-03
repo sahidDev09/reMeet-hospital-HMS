@@ -273,22 +273,22 @@ export function DoctorRail({ doctors }: DoctorRailProps) {
           {/* Top Navigation Controls */}
           <div className="flex items-center gap-2">
             <button
-                onClick={handlePrev}
-                aria-label="Previous doctor"
-                className="flex size-10 items-center justify-center rounded-full border border-line bg-surface shadow-sm backdrop-blur-md transition-all hover:scale-105 hover:bg-surface-strong hover:text-accent active:scale-95 text-ink"
-              >
-                <ChevronLeft className="size-5" />
-              </button>
-              <button
-                onClick={handleNext}
-                aria-label="Next doctor"
-                className="flex size-10 items-center justify-center rounded-full border border-line bg-surface shadow-sm backdrop-blur-md transition-all hover:scale-105 hover:bg-surface-strong hover:text-accent active:scale-95 text-ink"
-              >
-                <ChevronRight className="size-5" />
-              </button>
-            </div>
+              onClick={handlePrev}
+              aria-label="Previous doctor"
+              className="flex size-10 items-center justify-center rounded-full border border-line bg-surface shadow-sm backdrop-blur-md transition-all hover:scale-105 hover:bg-surface-strong hover:text-accent active:scale-95 text-ink cursor-pointer"
+            >
+              <ChevronLeft className="size-5" />
+            </button>
+            <button
+              onClick={handleNext}
+              aria-label="Next doctor"
+              className="flex size-10 items-center justify-center rounded-full border border-line bg-surface shadow-sm backdrop-blur-md transition-all hover:scale-105 hover:bg-surface-strong hover:text-accent active:scale-95 text-ink cursor-pointer"
+            >
+              <ChevronRight className="size-5" />
+            </button>
           </div>
         </div>
+      </div>
 
       {/* Full-Width Doctor Cards Infinite Carousel Rail */}
       <div 

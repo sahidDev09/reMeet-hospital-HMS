@@ -1,16 +1,15 @@
-import { clerkMiddleware } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 /**
- * Next 16 renamed `middleware.ts` to `proxy.ts`.
+ * Next.js request proxy / middleware.
  *
- * `clerkMiddleware()` runs unconditionally because Clerk needs it in the request
- * path to attach auth context — but it deliberately does no route gating here.
- * Clerk has deprecated `createRouteMatcher`, and matching route patterns in one
- * file is how a protected page quietly becomes public when someone adds a route
- * and forgets to update the list. Each protected resource calls
- * `await auth.protect()` itself, so protection lives with the thing it protects.
+ * Route gating is performed in layout boundaries (e.g. `app/(app)/layout.tsx` via `auth.protect()`),
+ * ensuring protected resources live explicitly with the layouts they guard.
  */
-export default clerkMiddleware()
+export default function proxy(request: NextRequest) {
+  return NextResponse.next()
+}
 
 export const config = {
   matcher: [

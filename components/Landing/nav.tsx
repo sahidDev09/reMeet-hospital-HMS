@@ -1,11 +1,13 @@
 'use client'
 
-import { Show } from '@clerk/nextjs'
 import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import * as React from 'react'
 import { Wordmark } from '@/components/brand/logo'
 import { Button } from '@/components/ui/button'
+import { UserMenu } from '@/components/auth/user-menu'
+import { useAuth } from '@/lib/auth/context'
+import { homeFor } from '@/lib/auth/role-meta'
 import { cn } from '@/lib/utils'
 
 const LINKS = [
@@ -15,6 +17,7 @@ const LINKS = [
 ]
 
 export function MarketingNav() {
+  const { isAuthenticated, role, isLoading } = useAuth()
   const [open, setOpen] = React.useState(false)
   const [lifted, setLifted] = React.useState(false)
 
@@ -50,19 +53,27 @@ export function MarketingNav() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2 md:ml-0">
-          <Show when="signed-out">
-            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-              <Link href="/sign-in">Sign in</Link>
-            </Button>
-            <Button asChild size="sm">
-              <Link href="/sign-up">Get started</Link>
-            </Button>
-          </Show>
-          <Show when="signed-in">
-            <Button asChild size="sm">
-              <Link href="/dashboard">Open reMeet</Link>
-            </Button>
-          </Show>
+          {!isLoading && (
+            <>
+              {isAuthenticated ? (
+                <div className="flex items-center gap-2.5">
+                  <Button asChild size="sm">
+                    <Link href={homeFor(role)}>Open reMeet</Link>
+                  </Button>
+                  <UserMenu />
+                </div>
+              ) : (
+                <>
+                  <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+                    <Link href="/sign-in">Sign in</Link>
+                  </Button>
+                  <Button asChild size="sm">
+                    <Link href="/sign-up">Get started</Link>
+                  </Button>
+                </>
+              )}
+            </>
+          )}
 
           <button
             type="button"
@@ -89,13 +100,23 @@ export function MarketingNav() {
                 {l.label}
               </a>
             ))}
-            <Link
-              href="/sign-in"
-              onClick={() => setOpen(false)}
-              className="py-3 text-sm font-medium text-accent"
-            >
-              Sign in
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                href={homeFor(role)}
+                onClick={() => setOpen(false)}
+                className="py-3 text-sm font-medium text-accent"
+              >
+                Open reMeet Workspace
+              </Link>
+            ) : (
+              <Link
+                href="/sign-in"
+                onClick={() => setOpen(false)}
+                className="py-3 text-sm font-medium text-accent"
+              >
+                Sign in
+              </Link>
+            )}
           </nav>
         </div>
       ) : null}

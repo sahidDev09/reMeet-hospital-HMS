@@ -1,7 +1,7 @@
-import { auth, currentUser } from '@clerk/nextjs/server'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { ROLE_COOKIE, isRole } from '@/lib/auth/role-meta'
+import { getCurrentUser } from '@/lib/auth/session'
 import type { Role } from '@/lib/data/types'
 
 /**
@@ -15,31 +15,20 @@ export { DEMO_DOCTOR_ID, ROLES, ROLE_COOKIE, ROLE_LABEL, homeFor, isRole } from 
  * The signed-in user's role.
  */
 export async function getRole(): Promise<Role> {
-  const { sessionClaims } = await auth()
-  let userEmail: string | undefined
-
-  try {
-    const user = await currentUser()
-    userEmail = user?.emailAddresses?.[0]?.emailAddress?.toLowerCase()
-  } catch {
-    // Session without user lookup fallback
-  }
-
+  const user = await getCurrentUser()
+  const userEmail = user?.email?.toLowerCase()
   const isAdminAccount = userEmail === 'iambotforwork72@gmail.com'
 
-  const claim = sessionClaims?.metadata?.role
-  if (isRole(claim)) {
-    if (isAdminAccount && claim === 'doctor') return 'admin'
-    return claim
+  if (user?.role && isRole(user.role)) {
+    if (isAdminAccount && user.role === 'doctor') return 'admin'
+    return user.role
   }
 
-  if (process.env.NODE_ENV !== 'production') {
-    const jar = await cookies()
-    const stored = jar.get(ROLE_COOKIE)?.value
-    if (isRole(stored)) {
-      if (isAdminAccount && stored === 'doctor') return 'admin'
-      return stored
-    }
+  const jar = await cookies()
+  const stored = jar.get(ROLE_COOKIE)?.value
+  if (isRole(stored)) {
+    if (isAdminAccount && stored === 'doctor') return 'admin'
+    return stored
   }
 
   return 'admin'

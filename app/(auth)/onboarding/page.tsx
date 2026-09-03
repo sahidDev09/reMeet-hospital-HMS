@@ -14,19 +14,31 @@ export default function OnboardingPage() {
   const [selectedRole, setSelectedRole] = useState<SelectedRole>(null)
   const [isNavigating, setIsNavigating] = useState(false)
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!selectedRole) return
     setIsNavigating(true)
 
-    // Store selected role in cookie/localStorage if needed
-    document.cookie = `remeet_role=${selectedRole === 'patient' ? 'staff' : selectedRole}; path=/; max-age=31536000`
+    const targetRole = selectedRole === 'patient' ? 'staff' : selectedRole
+
+    try {
+      await fetch('/api/auth/demo-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: targetRole }),
+      })
+    } catch {
+      // Fallback
+    }
+
+    document.cookie = `remeet_role=${targetRole}; path=/; max-age=31536000`
+    localStorage.setItem('remeet_onboarded', 'true')
 
     if (selectedRole === 'staff') {
       router.push('/dashboard')
     } else if (selectedRole === 'doctor') {
       router.push('/doctor-verification')
     } else if (selectedRole === 'patient') {
-      router.push('/?patient_onboarded=true')
+      router.push('/patient')
     }
   }
 

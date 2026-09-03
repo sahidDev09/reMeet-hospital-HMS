@@ -65,7 +65,12 @@ export default function AdminLoginPage() {
     try {
       const isValid = await verifyAdmin2FACode(email, otp2fa)
       if (isValid) {
-        // Set admin role cookie & mark onboarded
+        // Set admin role & session
+        await fetch('/api/auth/demo-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: 'admin' }),
+        })
         document.cookie = 'remeet_role=admin; path=/; max-age=31536000'
         localStorage.setItem('remeet_onboarded', 'true')
         setInfoMsg('2FA verified! Redirecting to Admin Dashboard...')

@@ -55,7 +55,12 @@ function DoctorOtpContent() {
       const res = await verifyDoctorOtp(email, otp)
       if (res.success) {
         setStatusMsg({ type: 'success', text: res.message })
-        // Set doctor role cookie & redirect to /portal
+        // Set doctor role & session
+        await fetch('/api/auth/demo-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: 'doctor' }),
+        })
         document.cookie = 'remeet_role=doctor; path=/; max-age=31536000'
         setTimeout(() => {
           router.push('/portal')

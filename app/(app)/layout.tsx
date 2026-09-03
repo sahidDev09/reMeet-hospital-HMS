@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server'
+import { auth } from '@/lib/auth/session'
 import { Shell } from '@/components/app/shell'
 import { getRole } from '@/lib/auth/roles'
 
@@ -10,7 +10,8 @@ import { getRole } from '@/lib/auth/roles'
  * the group inherits it automatically instead of needing a matcher updated.
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  await auth.protect()
+  const { protect } = await auth()
+  await protect()
   const role = await getRole()
 
   return <Shell role={role}>{children}</Shell>

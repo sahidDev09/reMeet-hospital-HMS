@@ -1,28 +1,28 @@
 'use client'
 
-import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
 import { setReviewRole } from '@/app/actions/role'
 import { NativeSelect } from '@/components/ui/input'
 import { ROLE_LABEL, ROLES } from '@/lib/auth/role-meta'
+import { useAuth } from '@/lib/auth/context'
 import type { Role } from '@/lib/data/types'
 
 /**
  * Switches the role the app renders for, so the doctor portal and front-desk
- * views can be reviewed without three Clerk accounts.
+ * views can be reviewed without separate accounts.
  *
  * Development only, and not a permission boundary — it changes what the UI
  * offers, not what a server would allow. It disappears in production builds.
  */
 export function RoleSwitcher({ role }: { role: Role }) {
-  const { user } = useUser()
+  const { user, switchRole } = useAuth()
   const router = useRouter()
   const [pending, startTransition] = React.useTransition()
 
   if (process.env.NODE_ENV === 'production') return null
 
-  const email = user?.primaryEmailAddress?.emailAddress?.toLowerCase()
+  const email = user?.email?.toLowerCase()
   const isAdminAccount = email === 'iambotforwork72@gmail.com' || role === 'admin'
 
   // Administrator accounts (e.g. iambotforwork72@gmail.com) only see Administrator and Front desk
@@ -40,6 +40,7 @@ export function RoleSwitcher({ role }: { role: Role }) {
           const next = e.target.value as Role
           startTransition(async () => {
             await setReviewRole(next)
+            await switchRole(next)
             router.replace(next === 'doctor' ? '/portal' : '/dashboard')
           })
         }}

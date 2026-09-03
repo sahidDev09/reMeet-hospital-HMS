@@ -1,11 +1,11 @@
 'use client'
 
-import { UserButton } from '@clerk/nextjs'
 import { Menu, Search } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import * as React from 'react'
 import { RoleSwitcher } from '@/components/app/role-switcher'
 import { ThemeToggle } from '@/components/app/theme-toggle'
+import { UserMenu } from '@/components/auth/user-menu'
 import type { Role } from '@/lib/data/types'
 import { NAV } from '@/lib/nav'
 
@@ -66,11 +66,7 @@ export function Topbar({
 
         <RoleSwitcher role={role} />
         <ThemeToggle className="hidden sm:flex" />
-
-        <UserButton
-          appearance={{ elements: { avatarBox: 'size-8 rounded-lg' } }}
-          userProfileMode="modal"
-        />
+        <UserMenu />
       </div>
     </header>
   )

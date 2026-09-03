@@ -3,10 +3,10 @@ import type { Role } from '@/lib/data/types'
 /**
  * Role facts with no server dependencies.
  *
- * Kept apart from `roles.ts` on purpose: that file reads the Clerk session and
+ * Kept apart from `roles.ts` on purpose: that file reads the server session and
  * the cookie jar, so it can only run on the server. The sidebar and the dev role
  * switcher are client components and need the labels — importing them from here
- * keeps `next/headers` out of the browser bundle, which Next refuses to build.
+ * keeps `next/headers` out of the browser bundle.
  */
 export const ROLES = ['admin', 'doctor', 'staff'] as const satisfies readonly Role[]
 
@@ -29,7 +29,7 @@ export function homeFor(role: Role): string {
 
 /**
  * The doctor a signed-in doctor *is*. With no backend there's no mapping from
- * Clerk user to staff record, so the portal reviews against the first doctor on
- * the roster. Swap this for a lookup by Clerk user id once accounts are linked.
+ * auth user to staff record, so the portal reviews against the first doctor on
+ * the roster. Swap this for a lookup by user id once accounts are linked.
  */
 export const DEMO_DOCTOR_ID = 'doc_01'

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useUser } from '@clerk/nextjs'
+import { useAuth } from '@/lib/auth/context'
 import {
   Building2,
   Stethoscope,
@@ -25,7 +25,7 @@ import { createVerificationRequest, verifyDoctorOtp, generateAdmin2FACode, verif
 import { sendDoctorVerificationEmailToAdmin, sendAdmin2FAOtpEmail } from '@/lib/email'
 
 export function OnboardingModal() {
-  const { isLoaded, isSignedIn, user } = useUser()
+  const { user, isAuthenticated, isLoading, switchRole } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -55,11 +55,11 @@ export function OnboardingModal() {
   const [infoMsg, setInfoMsg] = useState('')
 
   useEffect(() => {
-    if (isLoaded) {
+    if (!isLoading) {
       const forceOnboarding = searchParams.get('onboarding') === 'true'
       const hasOnboarded = localStorage.getItem('remeet_onboarded')
-      const userEmail = user?.primaryEmailAddress?.emailAddress?.toLowerCase()
-      const isRoleAdmin = document.cookie.includes('remeet_role=admin')
+      const userEmail = user?.email?.toLowerCase()
+      const isRoleAdmin = document.cookie.includes('remeet_role=admin') || user?.role === 'admin'
       const isAdminUser = userEmail === 'iambotforwork72@gmail.com' || isRoleAdmin
 
       // If user is Admin, DO NOT show onboarding role selection modal.
@@ -69,17 +69,17 @@ export function OnboardingModal() {
       }
 
       // Automatically open modal when non-admin user signs in or signs up for first time, or if forceOnboarding is present
-      if ((isSignedIn && !hasOnboarded) || forceOnboarding) {
+      if ((isAuthenticated && !hasOnboarded) || forceOnboarding) {
         setIsOpen(true)
-        if (user?.primaryEmailAddress?.emailAddress) {
-          setEmail(user.primaryEmailAddress.emailAddress)
+        if (user?.email) {
+          setEmail(user.email)
         }
-        if (user?.fullName) {
-          setFullName(user.fullName)
+        if (user?.name) {
+          setFullName(user.name)
         }
       }
     }
-  }, [isLoaded, isSignedIn, searchParams, user])
+  }, [isLoading, isAuthenticated, searchParams, user])
 
   // Allow triggering via window event if needed
   useEffect(() => {
@@ -96,17 +96,19 @@ export function OnboardingModal() {
   }
 
   // --- Front Desk / Patient Handler ---
-  const handleRoleSubmit = () => {
+  const handleRoleSubmit = async () => {
     if (!selectedRole) return
 
     localStorage.setItem('remeet_onboarded', 'true')
 
     if (selectedRole === 'staff') {
       document.cookie = 'remeet_role=staff; path=/; max-age=31536000'
+      await switchRole('staff')
       handleClose()
       router.push('/dashboard')
     } else if (selectedRole === 'patient') {
       document.cookie = 'remeet_role=staff; path=/; max-age=31536000'
+      await switchRole('staff')
       handleClose()
       router.push('/patient')
     } else if (selectedRole === 'doctor') {
@@ -167,6 +169,7 @@ export function OnboardingModal() {
       if (res.success) {
         setInfoMsg(res.message)
         document.cookie = 'remeet_role=doctor; path=/; max-age=31536000'
+        await switchRole('doctor')
         setTimeout(() => {
           handleClose()
           router.push('/portal')
@@ -221,6 +224,7 @@ export function OnboardingModal() {
       const isValid = await verifyAdmin2FACode(adminEmail, adminOtp)
       if (isValid) {
         document.cookie = 'remeet_role=admin; path=/; max-age=31536000'
+        await switchRole('admin')
         setInfoMsg('2FA verified! Unlocking Admin Dashboard...')
         setTimeout(() => {
           handleClose()
