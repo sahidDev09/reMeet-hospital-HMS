@@ -8,7 +8,7 @@ import type { Role } from '@/lib/data/types'
  * switcher are client components and need the labels — importing them from here
  * keeps `next/headers` out of the browser bundle.
  */
-export const ROLES = ['admin', 'doctor', 'staff'] as const satisfies readonly Role[]
+export const ROLES = ['admin', 'doctor', 'staff', 'patient'] as const satisfies readonly Role[]
 
 export const ROLE_COOKIE = 'remeet_role'
 
@@ -16,6 +16,7 @@ export const ROLE_LABEL: Record<Role, string> = {
   admin: 'Administrator',
   doctor: 'Doctor',
   staff: 'Front desk',
+  patient: 'Patient',
 }
 
 export function isRole(value: unknown): value is Role {
@@ -24,7 +25,9 @@ export function isRole(value: unknown): value is Role {
 
 /** Where each role should land after signing in. */
 export function homeFor(role: Role): string {
-  return role === 'doctor' ? '/portal' : '/dashboard'
+  if (role === 'doctor') return '/portal'
+  if (role === 'patient') return '/patient'
+  return '/dashboard'
 }
 
 /**

@@ -10,7 +10,6 @@ import {
   ArrowRight,
   ShieldCheck,
   X,
-  Upload,
   CheckCircle2,
   ShieldAlert,
   Loader2,
@@ -31,7 +30,7 @@ export function OnboardingModal() {
 
   const [isOpen, setIsOpen] = useState(false)
   const [view, setView] = useState<'roles' | 'doctor-form' | 'doctor-success' | 'doctor-otp' | 'admin-login' | 'admin-2fa'>('roles')
-  const [selectedRole, setSelectedRole] = useState<'staff' | 'doctor' | 'patient' | null>(null)
+  const [selectedRole, setSelectedRole] = useState<'staff' | 'doctor' | 'patient' | 'admin' | null>(null)
 
   // Doctor Form State
   const [fullName, setFullName] = useState('')
@@ -57,13 +56,13 @@ export function OnboardingModal() {
   useEffect(() => {
     if (!isLoading) {
       const forceOnboarding = searchParams.get('onboarding') === 'true'
-      const hasOnboarded = localStorage.getItem('remeet_onboarded')
+      const hasOnboarded = typeof window !== 'undefined' ? localStorage.getItem('remeet_onboarded') : null
       const userEmail = user?.email?.toLowerCase()
-      const isRoleAdmin = document.cookie.includes('remeet_role=admin') || user?.role === 'admin'
+      const isRoleAdmin = user?.role === 'admin'
       const isAdminUser = userEmail === 'iambotforwork72@gmail.com' || isRoleAdmin
 
-      // If user is Admin, DO NOT show onboarding role selection modal.
-      if (isAdminUser) {
+      // If user is Admin, DO NOT show onboarding role selection modal unless forced
+      if (isAdminUser && !forceOnboarding) {
         setIsOpen(false)
         return
       }
@@ -95,9 +94,19 @@ export function OnboardingModal() {
     localStorage.setItem('remeet_onboarded', 'true')
   }
 
-  // --- Front Desk / Patient Handler ---
+  // --- Role Submit Handler ---
   const handleRoleSubmit = async () => {
     if (!selectedRole) return
+
+    if (selectedRole === 'admin') {
+      setView('admin-login')
+      return
+    }
+
+    if (selectedRole === 'doctor') {
+      setView('doctor-form')
+      return
+    }
 
     localStorage.setItem('remeet_onboarded', 'true')
 
@@ -111,8 +120,6 @@ export function OnboardingModal() {
       await switchRole('staff')
       handleClose()
       router.push('/patient')
-    } else if (selectedRole === 'doctor') {
-      setView('doctor-form')
     }
   }
 
@@ -277,7 +284,7 @@ export function OnboardingModal() {
             </>
           ) : view === 'admin-login' ? (
             <>
-              <h2 className="font-display text-2xl font-semibold text-ink">Admin Manual Login</h2>
+              <h2 className="font-display text-2xl font-semibold text-ink">Admin Authentication</h2>
               <p className="text-xs text-ink-soft">Restricted portal for system administrators</p>
             </>
           ) : (
@@ -303,10 +310,10 @@ export function OnboardingModal() {
           </div>
         ) : null}
 
-        {/* VIEW 1: Role Selection */}
+        {/* VIEW 1: Role Selection Grid (All 4 Roles) */}
         {view === 'roles' ? (
           <div className="flex flex-col gap-5">
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setSelectedRole('staff')}
@@ -321,7 +328,7 @@ export function OnboardingModal() {
                   <Building2 className="size-5" />
                 </div>
                 <h3 className="mt-2 text-sm font-semibold text-ink">Front Desk</h3>
-                <p className="text-[0.6875rem] text-ink-soft mt-0.5">Staff & reception</p>
+                <p className="text-[0.6875rem] text-ink-soft mt-0.5">Staff & triage reception</p>
               </button>
 
               <button
@@ -338,7 +345,7 @@ export function OnboardingModal() {
                   <Stethoscope className="size-5" />
                 </div>
                 <h3 className="mt-2 text-sm font-semibold text-ink">Doctor</h3>
-                <p className="text-[0.6875rem] text-ink-soft mt-0.5">Verification req.</p>
+                <p className="text-[0.6875rem] text-ink-soft mt-0.5">Doctor portal & consults</p>
               </button>
 
               <button
@@ -355,7 +362,24 @@ export function OnboardingModal() {
                   <UserCheck className="size-5" />
                 </div>
                 <h3 className="mt-2 text-sm font-semibold text-ink">Patient</h3>
-                <p className="text-[0.6875rem] text-ink-soft mt-0.5">Book & prescriptions</p>
+                <p className="text-[0.6875rem] text-ink-soft mt-0.5">Bookings & prescriptions</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedRole('admin')}
+                className={cn(
+                  'group flex flex-col items-center rounded-2xl border p-4 text-center transition-all cursor-pointer',
+                  selectedRole === 'admin'
+                    ? 'border-accent bg-accent/10 shadow-md ring-2 ring-accent'
+                    : 'border-line bg-bg hover:border-accent/40',
+                )}
+              >
+                <div className="grid size-10 place-items-center rounded-xl bg-accent-soft text-accent group-hover:bg-accent group-hover:text-bg transition-colors">
+                  <ShieldCheck className="size-5" />
+                </div>
+                <h3 className="mt-2 text-sm font-semibold text-ink">Administrator</h3>
+                <p className="text-[0.6875rem] text-ink-soft mt-0.5">Hospital control & 2FA</p>
               </button>
             </div>
 
@@ -365,7 +389,8 @@ export function OnboardingModal() {
               onClick={handleRoleSubmit}
               className="w-full gap-2 mt-2"
             >
-              Continue <ArrowRight className="size-4" />
+              Continue with {selectedRole ? (selectedRole === 'admin' ? 'Administrator' : selectedRole.toUpperCase()) : 'Selected Role'}{' '}
+              <ArrowRight className="size-4" />
             </Button>
 
             <div className="flex items-center justify-between border-t border-line pt-3 text-xs text-ink-faint">
@@ -374,7 +399,7 @@ export function OnboardingModal() {
                 onClick={() => setView('admin-login')}
                 className="text-accent hover:underline flex items-center gap-1 cursor-pointer"
               >
-                <ShieldCheck className="size-3.5" /> Admin 2FA Login
+                <ShieldCheck className="size-3.5" /> Direct Admin 2FA Login
               </button>
               <button
                 type="button"

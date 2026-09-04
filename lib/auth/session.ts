@@ -2,10 +2,16 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { AuthUser, Session } from '@/lib/auth/types'
 import type { Role } from '@/lib/data/types'
-import { ROLE_COOKIE, isRole } from '@/lib/auth/role-meta'
+import { ROLE_COOKIE } from '@/lib/auth/role-meta'
+import {
+  signJWT,
+  verifyJWT,
+  JWT_COOKIE_NAME,
+  JWT_MAX_AGE_SECONDS,
+} from '@/lib/auth/jwt'
 
-export const SESSION_COOKIE = 'remeet_session'
-export const SESSION_MAX_AGE = 60 * 60 * 24 * 30 // 30 days in seconds
+export const SESSION_COOKIE = JWT_COOKIE_NAME
+export const SESSION_MAX_AGE = JWT_MAX_AGE_SECONDS
 
 /**
  * Pre-configured accounts for instant access and demo environments.
@@ -54,63 +60,27 @@ export const DEMO_ACCOUNTS: Record<string, AuthUser> = {
 }
 
 /**
- * Encodes a session object into a secure base64 string.
- */
-export function encodeSession(session: Session): string {
-  try {
-    const json = JSON.stringify(session)
-    return Buffer.from(json).toString('base64url')
-  } catch {
-    return ''
-  }
-}
-
-/**
- * Decodes and validates a session string.
- */
-export function decodeSession(raw: string | undefined): Session | null {
-  if (!raw) return null
-  try {
-    const json = Buffer.from(raw, 'base64url').toString('utf-8')
-    const session = JSON.parse(json) as Session
-    if (!session || !session.user || !session.expiresAt) return null
-    if (Date.now() > session.expiresAt) return null
-    return session
-  } catch {
-    return null
-  }
-}
-
-/**
- * Returns the currently active session from HTTP cookies.
+ * Returns the currently active verified session from HTTP cookies using JWT.
+ * Returns null if no valid, signed JWT token is present.
  */
 export async function getSession(): Promise<Session | null> {
   const jar = await cookies()
-  const raw = jar.get(SESSION_COOKIE)?.value
-  let session = decodeSession(raw)
+  const token = jar.get(JWT_COOKIE_NAME)?.value
 
-  // In development, if no session cookie exists but role cookie does, provide a default demo session
-  if (!session && process.env.NODE_ENV !== 'production') {
-    const storedRole = jar.get(ROLE_COOKIE)?.value
-    if (isRole(storedRole)) {
-      const demoUser = DEMO_ACCOUNTS[storedRole] || DEMO_ACCOUNTS.admin
-      session = {
-        user: { ...demoUser, role: storedRole },
-        createdAt: Date.now(),
-        expiresAt: Date.now() + SESSION_MAX_AGE * 1000,
-      }
-    }
+  if (!token) {
+    return null
   }
 
-  // If role cookie overrides session in development or review mode
-  if (session) {
-    const storedRole = jar.get(ROLE_COOKIE)?.value
-    if (isRole(storedRole) && session.user.role !== storedRole) {
-      session.user.role = storedRole
-    }
+  const user = await verifyJWT(token)
+  if (!user) {
+    return null
   }
 
-  return session
+  return {
+    user,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + JWT_MAX_AGE_SECONDS * 1000,
+  }
 }
 
 /**
@@ -122,7 +92,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 }
 
 /**
- * Next.js server-side auth helper. Replaces Clerk's `auth()`.
+ * Next.js server-side auth helper.
  */
 export async function auth() {
   const session = await getSession()
@@ -143,56 +113,53 @@ export async function auth() {
 }
 
 /**
- * Creates and sets a new session cookie.
+ * Creates and sets a new JWT session cookie.
  */
 export async function createSession(user: AuthUser): Promise<Session> {
   const jar = await cookies()
-  const now = Date.now()
-  const session: Session = {
-    user,
-    createdAt: now,
-    expiresAt: now + SESSION_MAX_AGE * 1000,
-  }
+  const token = await signJWT(user)
 
-  const encoded = encodeSession(session)
-
-  jar.set(SESSION_COOKIE, encoded, {
+  jar.set(JWT_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: SESSION_MAX_AGE,
+    maxAge: JWT_MAX_AGE_SECONDS,
   })
 
-  // Sync role cookie
+  // Sync role cookie for non-sensitive client UI reads
   jar.set(ROLE_COOKIE, user.role, {
     httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: SESSION_MAX_AGE,
+    maxAge: JWT_MAX_AGE_SECONDS,
   })
 
-  return session
+  return {
+    user,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + JWT_MAX_AGE_SECONDS * 1000,
+  }
 }
 
 /**
- * Updates the user's role in the active session.
+ * Updates the user's role in the active session and re-issues a signed JWT.
  */
 export async function updateSessionRole(role: Role): Promise<Session | null> {
   const jar = await cookies()
-  const session = await getSession()
-  if (!session) return null
+  const user = await getCurrentUser()
+  if (!user) return null
 
-  session.user.role = role
-  const encoded = encodeSession(session)
+  user.role = role
+  const token = await signJWT(user)
 
-  jar.set(SESSION_COOKIE, encoded, {
+  jar.set(JWT_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: SESSION_MAX_AGE,
+    maxAge: JWT_MAX_AGE_SECONDS,
   })
 
   jar.set(ROLE_COOKIE, role, {
@@ -200,10 +167,14 @@ export async function updateSessionRole(role: Role): Promise<Session | null> {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: SESSION_MAX_AGE,
+    maxAge: JWT_MAX_AGE_SECONDS,
   })
 
-  return session
+  return {
+    user,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + JWT_MAX_AGE_SECONDS * 1000,
+  }
 }
 
 /**
@@ -211,6 +182,6 @@ export async function updateSessionRole(role: Role): Promise<Session | null> {
  */
 export async function destroySession(): Promise<void> {
   const jar = await cookies()
-  jar.delete(SESSION_COOKIE)
+  jar.delete(JWT_COOKIE_NAME)
   jar.delete(ROLE_COOKIE)
 }

@@ -2,11 +2,9 @@
 
 import * as React from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import {
   ShieldCheck,
-  Stethoscope,
-  Building2,
-  User,
   ArrowRight,
   Loader2,
   AlertCircle,
@@ -18,12 +16,22 @@ import { useAuth } from '@/lib/auth/context'
 import { Button } from '@/components/ui/button'
 
 export function SignInForm() {
-  const { signIn, signInWithRole, isLoading } = useAuth()
+  const { signIn, isLoading } = useAuth()
+  const searchParams = useSearchParams()
+  const redirectTarget = searchParams.get('redirect') || searchParams.get('callbackUrl') || undefined
+
   const [email, setEmail] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [showPassword, setShowPassword] = React.useState(false)
   const [error, setError] = React.useState('')
   const [pendingProvider, setPendingProvider] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    const errorParam = searchParams.get('error')
+    if (errorParam) {
+      setError(errorParam)
+    }
+  }, [searchParams])
 
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,7 +39,7 @@ export function SignInForm() {
     setError('')
     setPendingProvider('credentials')
 
-    const res = await signIn(email, password)
+    const res = await signIn(email, password, redirectTarget)
     if (res?.error) {
       setError(res.error)
     }
@@ -41,17 +49,10 @@ export function SignInForm() {
   const handleOAuth = async (provider: 'google' | 'github') => {
     setError('')
     setPendingProvider(provider)
-    const res = await signIn(provider)
+    const res = await signIn(provider, undefined, redirectTarget)
     if (res?.error) {
       setError(res.error)
     }
-    setPendingProvider(null)
-  }
-
-  const handleDemoLogin = async (roleKey: 'admin' | 'doctor' | 'staff' | 'patient') => {
-    setError('')
-    setPendingProvider(`demo-${roleKey}`)
-    await signInWithRole(roleKey)
     setPendingProvider(null)
   }
 
@@ -189,69 +190,6 @@ export function SignInForm() {
           )}
         </Button>
       </form>
-
-      {/* 1-Click Quick Demo Sign In */}
-      <div className="rounded-2xl border border-line bg-surface-strong/60 p-3 text-left">
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-[0.6875rem] font-semibold uppercase tracking-wider text-ink-faint">
-            ⚡ Quick Demo Logins
-          </span>
-          <span className="text-[0.625rem] text-accent">1-click access</span>
-        </div>
-        <div className="grid grid-cols-2 gap-1.5">
-          <button
-            type="button"
-            onClick={() => handleDemoLogin('admin')}
-            disabled={!!pendingProvider}
-            className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-surface p-2 text-left text-xs transition-all hover:border-accent/40 hover:bg-accent-soft/40"
-          >
-            <ShieldCheck className="size-3.5 text-accent shrink-0" />
-            <div className="flex flex-col min-w-0">
-              <span className="font-medium text-ink truncate">Administrator</span>
-              <span className="text-[0.625rem] text-ink-faint truncate">Full system control</span>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleDemoLogin('doctor')}
-            disabled={!!pendingProvider}
-            className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-surface p-2 text-left text-xs transition-all hover:border-accent/40 hover:bg-accent-soft/40"
-          >
-            <Stethoscope className="size-3.5 text-indigo-500 shrink-0" />
-            <div className="flex flex-col min-w-0">
-              <span className="font-medium text-ink truncate">Doctor</span>
-              <span className="text-[0.625rem] text-ink-faint truncate">Dr. Eleanor Vance</span>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleDemoLogin('staff')}
-            disabled={!!pendingProvider}
-            className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-surface p-2 text-left text-xs transition-all hover:border-accent/40 hover:bg-accent-soft/40"
-          >
-            <Building2 className="size-3.5 text-teal-500 shrink-0" />
-            <div className="flex flex-col min-w-0">
-              <span className="font-medium text-ink truncate">Front Desk</span>
-              <span className="text-[0.625rem] text-ink-faint truncate">Triage & Reception</span>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleDemoLogin('patient')}
-            disabled={!!pendingProvider}
-            className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-surface p-2 text-left text-xs transition-all hover:border-accent/40 hover:bg-accent-soft/40"
-          >
-            <User className="size-3.5 text-amber-500 shrink-0" />
-            <div className="flex flex-col min-w-0">
-              <span className="font-medium text-ink truncate">Patient</span>
-              <span className="text-[0.625rem] text-ink-faint truncate">Michael Ross</span>
-            </div>
-          </button>
-        </div>
-      </div>
 
       {/* Footer Links */}
       <div className="flex flex-col gap-2 border-t border-line pt-3 text-center text-xs text-ink-soft">

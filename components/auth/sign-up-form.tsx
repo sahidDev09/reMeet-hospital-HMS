@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import {
   ShieldCheck,
   Stethoscope,
@@ -20,6 +21,9 @@ import { cn } from '@/lib/utils'
 
 export function SignUpForm() {
   const { signUp, signIn, isLoading } = useAuth()
+  const searchParams = useSearchParams()
+  const redirectTarget = searchParams.get('redirect') || searchParams.get('callbackUrl') || undefined
+
   const [name, setName] = React.useState('')
   const [email, setEmail] = React.useState('')
   const [password, setPassword] = React.useState('')
@@ -37,12 +41,15 @@ export function SignUpForm() {
     setError('')
     setSubmitting(true)
 
-    const res = await signUp({
-      name,
-      email,
-      password,
-      role: selectedRole,
-    })
+    const res = await signUp(
+      {
+        name,
+        email,
+        password,
+        role: selectedRole,
+      },
+      redirectTarget
+    )
 
     if (res?.error) {
       setError(res.error)
@@ -53,7 +60,7 @@ export function SignUpForm() {
   const handleOAuth = async (provider: 'google' | 'github') => {
     setError('')
     setSubmitting(true)
-    const res = await signIn(provider)
+    const res = await signIn(provider, undefined, redirectTarget)
     if (res?.error) {
       setError(res.error)
     }
@@ -210,10 +217,12 @@ export function SignUpForm() {
 
             <button
               type="button"
-              onClick={() => setSelectedRole('staff')}
+              onClick={() => setSelectedRole('patient')}
               className={cn(
                 'flex flex-col items-center justify-center rounded-xl border p-2.5 text-center transition-all cursor-pointer',
-                'border-line bg-bg text-ink-soft hover:border-accent/40',
+                selectedRole === 'patient'
+                  ? 'border-accent bg-accent/10 ring-1 ring-accent text-ink font-semibold'
+                  : 'border-line bg-bg text-ink-soft hover:border-accent/40',
               )}
             >
               <User className="size-4 mb-1 text-amber-500" />

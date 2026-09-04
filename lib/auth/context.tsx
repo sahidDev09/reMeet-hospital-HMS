@@ -53,7 +53,7 @@ export function AuthProvider({
   const user = session?.user ?? null
   const isAuthenticated = !!user
   const status = loading ? 'loading' : isAuthenticated ? 'authenticated' : 'unauthenticated'
-  const role: Role = user?.role && isRole(user.role) ? user.role : 'admin'
+  const role: Role = user?.role && isRole(user.role) ? user.role : 'staff'
 
   const signInWithRole = async (roleKey: 'admin' | 'doctor' | 'staff' | 'patient', redirectTo?: string) => {
     setLoading(true)

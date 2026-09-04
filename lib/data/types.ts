@@ -6,7 +6,7 @@
  * fixtures to a real API without any component changing.
  */
 
-export type Role = 'admin' | 'doctor' | 'staff'
+export type Role = 'admin' | 'doctor' | 'staff' | 'patient'
 
 /**
  * Real department codes. These aren't cosmetic — they're the hospital's own
