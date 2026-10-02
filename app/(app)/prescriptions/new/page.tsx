@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { PageHeader } from '@/components/app/page-header'
 import { PrescriptionBuilder } from '@/components/app/prescription-builder'
-import { DEMO_DOCTOR_ID, getRole } from '@/lib/auth/roles'
+import { DEMO_DOCTOR_ID, getRole, requireRole } from '@/lib/auth/roles'
 import { listDoctors } from '@/lib/data/doctors'
 import { getPatient } from '@/lib/data/patients'
 
@@ -12,6 +12,7 @@ export default async function NewPrescriptionPage({
 }: {
   searchParams: Promise<{ patientId?: string; appointmentId?: string }>
 }) {
+  await requireRole('admin', 'doctor')
   const params = await searchParams
   const role = await getRole()
 
