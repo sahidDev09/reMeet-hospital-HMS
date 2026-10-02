@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { gsap } from 'gsap'
 import { ArrowLeft, Sparkles, Home, LayoutDashboard } from 'lucide-react'
 import { Wordmark } from '@/components/brand/logo'
+import { ThemeToggle } from '@/components/app/theme-toggle'
 
 export default function NotFound() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -93,6 +94,7 @@ export default function NotFound() {
         </Link>
 
         <div className="flex items-center gap-2.5">
+          <ThemeToggle />
           <Link
             href="/sign-in"
             className="rounded-full border border-black/10 bg-white/80 px-4 py-1.5 text-xs font-semibold text-ink shadow-sm backdrop-blur-md transition-all hover:bg-white hover:scale-105 active:scale-95 dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"

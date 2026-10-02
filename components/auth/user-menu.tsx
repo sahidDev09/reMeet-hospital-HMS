@@ -18,6 +18,7 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth/context'
 import { ROLE_LABEL, ROLES } from '@/lib/auth/role-meta'
 import type { Role } from '@/lib/data/types'
+import { ThemeToggle } from '@/components/app/theme-toggle'
 import { cn } from '@/lib/utils'
 
 export function UserMenu() {
@@ -176,6 +177,13 @@ export function UserMenu() {
                 )
               })}
             </div>
+          </div>
+
+          {/* Theme Option */}
+          <DropdownMenu.Separator className="my-1 h-px bg-line" />
+          <div className="flex items-center justify-between px-2.5 py-1.5">
+            <span className="text-xs text-ink-soft">Theme</span>
+            <ThemeToggle />
           </div>
 
           {/* Sign Out Button */}

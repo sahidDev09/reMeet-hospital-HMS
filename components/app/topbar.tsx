@@ -65,7 +65,7 @@ export function Topbar({
         </button>
 
         <RoleSwitcher role={role} />
-        <ThemeToggle className="hidden sm:flex" />
+        <ThemeToggle />
         <UserMenu />
       </div>
     </header>

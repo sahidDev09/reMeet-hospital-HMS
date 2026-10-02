@@ -162,10 +162,26 @@ function DoctorOtpContent() {
   )
 }
 
+import { ThemeToggle } from '@/components/app/theme-toggle'
+import Link from 'next/link'
+
 export default function DoctorOtpPage() {
   return (
-    <Suspense fallback={<div className="text-center p-8 text-sm text-ink-soft">Loading OTP verification...</div>}>
-      <DoctorOtpContent />
-    </Suspense>
+    <div className="flex min-h-dvh flex-col justify-between p-4 sm:p-6 lg:p-8">
+      <header className="mx-auto flex w-full max-w-4xl items-center justify-between">
+        <Link href="/" className="inline-flex items-center">
+          <Wordmark className="text-xl" />
+        </Link>
+        <ThemeToggle />
+      </header>
+      <div className="my-auto py-8">
+        <Suspense fallback={<div className="text-center p-8 text-sm text-ink-soft">Loading OTP verification...</div>}>
+          <DoctorOtpContent />
+        </Suspense>
+      </div>
+      <footer className="text-center text-xs text-ink-faint">
+        reMeet Clinical System &bull; Secure Doctor Verification
+      </footer>
+    </div>
   )
 }

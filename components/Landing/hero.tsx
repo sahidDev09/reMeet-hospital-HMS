@@ -56,13 +56,14 @@ export function Hero({
           data-dna-parallax
           className="absolute inset-0 scale-115 md:scale-125 origin-center will-change-transform"
         >
+          {/* DNA Helix Background - original rendering, seamless on dark and light themes */}
           <Image
             src="/assets/landing/dna_whool.png"
             alt="DNA Helix Structure"
             fill
             priority
             sizes="100vw"
-            className="object-cover object-right md:object-center opacity-100 dark:opacity-100"
+            className="object-cover object-right md:object-center pointer-events-none"
           />
         </div>
       </div>

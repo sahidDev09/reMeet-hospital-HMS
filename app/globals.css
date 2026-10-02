@@ -2,7 +2,7 @@
 @import 'tw-animate-css';
 
 /* Class-based dark mode, driven by next-themes. */
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------------------
    reMeet design tokens
@@ -210,7 +210,6 @@
     font-size: 0.6875rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--ink-faint);
   }
 }
 

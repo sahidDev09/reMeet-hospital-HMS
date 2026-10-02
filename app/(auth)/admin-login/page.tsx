@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { ShieldCheck, Lock, Mail, KeyRound, ArrowRight, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Wordmark } from '@/components/brand/logo'
+import { ThemeToggle } from '@/components/app/theme-toggle'
+import Link from 'next/link'
 import { generateAdmin2FACode, verifyAdmin2FACode } from '@/lib/data/verifications'
 import { sendAdmin2FAOtpEmail } from '@/lib/email'
 
@@ -89,15 +91,23 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-6 rounded-2xl border border-line bg-surface p-6 sm:p-8 shadow-xl">
-      <div className="flex flex-col items-center text-center gap-2">
-        <div className="grid size-12 place-items-center rounded-xl bg-accent-soft text-accent">
-          <ShieldCheck className="size-6" />
-        </div>
-        <Wordmark className="text-xl" />
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">
-          {step === 'credentials' ? 'Administration Login' : '2FA Security Check'}
-        </h1>
+    <div className="flex min-h-dvh flex-col justify-between p-4 sm:p-6 lg:p-8">
+      <header className="mx-auto flex w-full max-w-4xl items-center justify-between">
+        <Link href="/" className="inline-flex items-center">
+          <Wordmark className="text-xl" />
+        </Link>
+        <ThemeToggle />
+      </header>
+      <div className="my-auto py-8">
+        <div className="mx-auto flex w-full max-w-md flex-col gap-6 rounded-2xl border border-line bg-surface p-6 sm:p-8 shadow-xl">
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="grid size-12 place-items-center rounded-xl bg-accent-soft text-accent">
+              <ShieldCheck className="size-6" />
+            </div>
+            <Wordmark className="text-xl" />
+            <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">
+              {step === 'credentials' ? 'Administration Login' : '2FA Security Check'}
+            </h1>
         <p className="text-xs text-ink-soft">
           {step === 'credentials'
             ? 'Restricted portal for reMeet system administrators'
@@ -210,6 +220,11 @@ export default function AdminLoginPage() {
           </button>
         </form>
       )}
+        </div>
+      </div>
+      <footer className="text-center text-xs text-ink-faint">
+        reMeet Clinical System &bull; System Administration Access
+      </footer>
     </div>
   )
 }

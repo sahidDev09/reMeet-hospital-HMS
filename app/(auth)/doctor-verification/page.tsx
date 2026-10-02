@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Stethoscope, Upload, CheckCircle2, ShieldAlert, ArrowRight, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Wordmark } from '@/components/brand/logo'
+import { ThemeToggle } from '@/components/app/theme-toggle'
 import { createVerificationRequest } from '@/lib/data/verifications'
 import { sendDoctorVerificationEmailToAdmin } from '@/lib/email'
 
@@ -74,49 +75,70 @@ export default function DoctorVerificationPage() {
 
   if (submitted) {
     return (
-      <div className="mx-auto flex w-full max-w-lg flex-col items-center gap-6 rounded-2xl border border-line bg-surface p-8 text-center shadow-xl">
-        <div className="grid size-14 place-items-center rounded-full bg-emerald-500/10 text-emerald-500 ring-8 ring-emerald-500/5">
-          <CheckCircle2 className="size-8" />
-        </div>
+      <div className="flex min-h-dvh flex-col justify-between p-4 sm:p-6 lg:p-8">
+        <header className="mx-auto flex w-full max-w-4xl items-center justify-between">
+          <Link href="/" className="inline-flex items-center">
+            <Wordmark className="text-xl" />
+          </Link>
+          <ThemeToggle />
+        </header>
+        <div className="my-auto py-8">
+          <div className="mx-auto flex w-full max-w-lg flex-col items-center gap-6 rounded-2xl border border-line bg-surface p-8 text-center shadow-xl">
+            <div className="grid size-14 place-items-center rounded-full bg-emerald-500/10 text-emerald-500 ring-8 ring-emerald-500/5">
+              <CheckCircle2 className="size-8" />
+            </div>
 
-        <Wordmark className="text-xl" />
+            <Wordmark className="text-xl" />
 
-        <div className="flex flex-col gap-3">
-          <h2 className="font-display text-2xl font-semibold text-ink">Verification Submitted</h2>
-          <p className="text-sm leading-relaxed text-ink-soft bg-accent-soft/40 p-4 rounded-xl border border-accent/20">
-            “Thank you for submitting your information. Our team is currently reviewing your details. Once approved, you will receive a confirmation email with further instructions. Please allow some time for verification.”
-          </p>
-        </div>
+            <div className="flex flex-col gap-3">
+              <h2 className="font-display text-2xl font-semibold text-ink">Verification Submitted</h2>
+              <p className="text-sm leading-relaxed text-ink-soft bg-accent-soft/40 p-4 rounded-xl border border-accent/20">
+                “Thank you for submitting your information. Our team is currently reviewing your details. Once approved, you will receive a confirmation email with further instructions. Please allow some time for verification.”
+              </p>
+            </div>
 
-        <div className="flex flex-col w-full gap-3 pt-2">
-          <Button asChild size="lg" className="w-full gap-2">
-            <Link href={`/doctor-otp?email=${encodeURIComponent(email)}`}>
-              Proceed to OTP Verification
-              <ArrowRight className="size-4" />
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm" className="w-full">
-            <Link href="/onboarding">Back to Onboarding</Link>
-          </Button>
+            <div className="flex flex-col w-full gap-3 pt-2">
+              <Button asChild size="lg" className="w-full gap-2">
+                <Link href={`/doctor-otp?email=${encodeURIComponent(email)}`}>
+                  Proceed to OTP Verification
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="w-full">
+                <Link href="/onboarding">Back to Onboarding</Link>
+              </Button>
+            </div>
+          </div>
         </div>
+        <footer className="text-center text-xs text-ink-faint">
+          reMeet Clinical System &bull; Secure Doctor Verification
+        </footer>
       </div>
     )
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-lg flex-col gap-6 rounded-2xl border border-line bg-surface p-6 sm:p-8 shadow-xl">
-      <div className="flex flex-col items-center text-center gap-2">
-        <div className="grid size-12 place-items-center rounded-xl bg-accent-soft text-accent">
-          <Stethoscope className="size-6" />
-        </div>
-        <Wordmark className="text-xl" />
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">
-          Doctor Verification Request
-        </h1>
-        <p className="text-xs text-ink-soft">
-          Please provide your official identification details for administrative verification.
-        </p>
-      </div>
+    <div className="flex min-h-dvh flex-col justify-between p-4 sm:p-6 lg:p-8">
+      <header className="mx-auto flex w-full max-w-4xl items-center justify-between">
+        <Link href="/" className="inline-flex items-center">
+          <Wordmark className="text-xl" />
+        </Link>
+        <ThemeToggle />
+      </header>
+      <div className="my-auto py-8">
+        <div className="mx-auto flex w-full max-w-lg flex-col gap-6 rounded-2xl border border-line bg-surface p-6 sm:p-8 shadow-xl">
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="grid size-12 place-items-center rounded-xl bg-accent-soft text-accent">
+              <Stethoscope className="size-6" />
+            </div>
+            <Wordmark className="text-xl" />
+            <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">
+              Doctor Verification Request
+            </h1>
+            <p className="text-xs text-ink-soft">
+              Please provide your official identification details for administrative verification.
+            </p>
+          </div>
 
       {error ? (
         <div className="flex items-center gap-2 rounded-xl bg-rose-500/10 p-3 text-xs text-rose-500 border border-rose-500/20">
@@ -218,6 +240,11 @@ export default function DoctorVerificationPage() {
           )}
         </Button>
       </form>
+        </div>
+      </div>
+      <footer className="text-center text-xs text-ink-faint">
+        reMeet Clinical System &bull; Secure Doctor Verification
+      </footer>
     </div>
   )
 }

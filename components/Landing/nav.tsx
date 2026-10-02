@@ -6,6 +6,7 @@ import * as React from 'react'
 import { Wordmark } from '@/components/brand/logo'
 import { Button } from '@/components/ui/button'
 import { UserMenu } from '@/components/auth/user-menu'
+import { ThemeToggle } from '@/components/app/theme-toggle'
 import { useAuth } from '@/lib/auth/context'
 import { homeFor } from '@/lib/auth/role-meta'
 import { cn } from '@/lib/utils'
@@ -52,7 +53,7 @@ export function MarketingNav() {
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-2 md:ml-0">
+        <div className="ml-auto flex items-center gap-2.5 md:ml-0">
           {!isLoading && (
             <>
               {isAuthenticated ? (
@@ -63,17 +64,14 @@ export function MarketingNav() {
                   <UserMenu />
                 </div>
               ) : (
-                <>
-                  <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-                    <Link href="/sign-in">Sign in</Link>
-                  </Button>
-                  <Button asChild size="sm">
-                    <Link href="/sign-up">Get started</Link>
-                  </Button>
-                </>
+                <Button asChild size="sm">
+                  <Link href="/sign-in">Sign in</Link>
+                </Button>
               )}
             </>
           )}
+
+          <ThemeToggle />
 
           <button
             type="button"
@@ -100,6 +98,10 @@ export function MarketingNav() {
                 {l.label}
               </a>
             ))}
+            <div className="flex items-center justify-between border-b border-line py-3">
+              <span className="text-sm font-medium text-ink-soft">Theme</span>
+              <ThemeToggle />
+            </div>
             {isAuthenticated ? (
               <Link
                 href={homeFor(role)}
