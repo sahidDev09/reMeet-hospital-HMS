@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import { PrintButton } from '@/components/app/print-button'
 import { CLINIC, PrintSheet } from '@/components/app/print-sheet'
 import { Button } from '@/components/ui/button'
-import { getRole } from '@/lib/auth/roles'
+import { getRole, requireRole } from '@/lib/auth/roles'
 import { getPrescription } from '@/lib/data/prescriptions'
 import { age, date, dateTime, dosage } from '@/lib/format'
 
@@ -38,6 +38,7 @@ const TIMING_LABEL: Record<string, string> = {
  * PDF, which is why there's no jsPDF here.
  */
 export default async function PrescriptionPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireRole('admin', 'staff', 'doctor')
   const [rx, role] = await Promise.all([getPrescription((await params).id), getRole()])
   if (!rx) notFound()
 
