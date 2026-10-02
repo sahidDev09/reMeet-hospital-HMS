@@ -2,8 +2,10 @@
 
 import { Resend } from 'resend'
 
-const resendApiKey = process.env.RESEND_API_KEY || ''
-const resend = new Resend(resendApiKey)
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY?.trim() || ''
+  return new Resend(apiKey)
+}
 
 const FROM_EMAIL = 'onboarding@resend.dev'
 const ADMIN_EMAIL = 'iambotforwork72@gmail.com'
@@ -16,6 +18,7 @@ export async function sendDoctorVerificationEmailToAdmin(data: {
   idImageName?: string
 }) {
   try {
+    const resend = getResendClient()
     const result = await resend.emails.send({
       from: FROM_EMAIL,
       to: ADMIN_EMAIL,
@@ -45,9 +48,13 @@ export async function sendDoctorVerificationEmailToAdmin(data: {
 
 export async function sendDoctorApprovalOtpEmail(doctorEmail: string, doctorName: string, otp: string) {
   try {
-    const result = await resend.emails.send({
+    const resend = getResendClient()
+    const targetEmail = doctorEmail?.trim() || ADMIN_EMAIL
+
+    // Try sending directly to doctorEmail
+    const sendDirect = await resend.emails.send({
       from: FROM_EMAIL,
-      to: doctorEmail || ADMIN_EMAIL, // Resend free tier sends to verified email
+      to: targetEmail,
       subject: 'reMeet Hospital - Doctor Account Approved (Your OTP Code)',
       html: `
         <div style="font-family: sans-serif; padding: 20px; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px;">
@@ -64,7 +71,35 @@ export async function sendDoctorApprovalOtpEmail(doctorEmail: string, doctorName
         </div>
       `,
     })
-    return { success: true, id: result.data?.id }
+
+    if (!sendDirect.error) {
+      return { success: true, id: sendDirect.data?.id }
+    }
+
+    // If Resend rejected sending due to unverified domain in free tier, fallback to verified ADMIN_EMAIL
+    console.warn('Direct send to doctor email returned error, attempting fallback to admin:', sendDirect.error.message)
+    const fallbackSend = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: ADMIN_EMAIL,
+      subject: `[For Dr. ${doctorName} (${targetEmail})] reMeet Hospital - Doctor Account Approved (OTP: ${otp})`,
+      html: `
+        <div style="font-family: sans-serif; padding: 20px; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px;">
+          <div style="background-color: #fef3c7; border: 1px solid #fde68a; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 12px; color: #92400e;">
+            <strong>Notice:</strong> Forwarded to admin because recipient domain (${targetEmail}) is not verified on your Resend account.
+          </div>
+          <h2 style="color: #0d9488; margin-top: 0;">🎉 Doctor Verification Approved!</h2>
+          <p>Doctor: <strong>Dr. ${doctorName}</strong> (${targetEmail})</p>
+          <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
+            <p style="margin: 0; font-size: 14px; color: #166534;">Your One-Time Password (OTP):</p>
+            <h1 style="margin: 10px 0; font-size: 32px; letter-spacing: 6px; color: #0d9488; font-family: monospace;">${otp}</h1>
+            <p style="margin: 0; font-size: 12px; color: #15803d;">⏱️ Note: This OTP is valid for <strong>2 days (48 hours)</strong>.</p>
+          </div>
+          <p>Best regards,<br/>reMeet Hospital Administration</p>
+        </div>
+      `,
+    })
+
+    return { success: true, id: fallbackSend.data?.id, fallback: true }
   } catch (error: unknown) {
     const err = error as Error
     console.error('Failed to send approval OTP email:', err)
@@ -74,10 +109,13 @@ export async function sendDoctorApprovalOtpEmail(doctorEmail: string, doctorName
 
 export async function sendAdmin2FAOtpEmail(adminEmail: string, otp: string) {
   try {
+    const resend = getResendClient()
+    const targetEmail = adminEmail?.trim() || ADMIN_EMAIL
+
     const result = await resend.emails.send({
       from: FROM_EMAIL,
-      to: adminEmail,
-      subject: 'reMeet Hospital Admin - 2FA Security Code',
+      to: targetEmail,
+      subject: `reMeet Hospital Admin - 2FA Security Code: ${otp}`,
       html: `
         <div style="font-family: sans-serif; padding: 20px; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px;">
           <h2 style="color: #0d9488; margin-top: 0;">🔐 Admin Two-Factor Authentication</h2>

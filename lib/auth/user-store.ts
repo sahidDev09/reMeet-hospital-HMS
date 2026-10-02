@@ -231,6 +231,9 @@ export async function authenticateUser(
     if (!isValid) {
       throw new Error('Incorrect password. Please try again.')
     }
+  } else if (user.provider && user.provider !== 'credentials') {
+    const providerName = user.provider.charAt(0).toUpperCase() + user.provider.slice(1)
+    throw new Error(`This account was created with ${providerName}. Please click the ${providerName} button to sign in.`)
   }
 
   const isFirst = !!user.isFirstLogin

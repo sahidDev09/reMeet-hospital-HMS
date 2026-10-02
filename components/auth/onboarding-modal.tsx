@@ -116,8 +116,8 @@ export function OnboardingModal() {
       handleClose()
       router.push('/dashboard')
     } else if (selectedRole === 'patient') {
-      document.cookie = 'remeet_role=staff; path=/; max-age=31536000'
-      await switchRole('staff')
+      document.cookie = 'remeet_role=patient; path=/; max-age=31536000'
+      await switchRole('patient')
       handleClose()
       router.push('/patient')
     }

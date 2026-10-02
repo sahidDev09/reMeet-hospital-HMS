@@ -2,6 +2,11 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import {
+  SessionProvider as NextAuthSessionProvider,
+  signIn as nextAuthSignIn,
+  signOut as nextAuthSignOut,
+} from 'next-auth/react'
 import type { AuthUser, Session, AuthState } from '@/lib/auth/types'
 import type { Role } from '@/lib/data/types'
 import { homeFor, isRole } from '@/lib/auth/role-meta'
@@ -18,7 +23,7 @@ interface AuthContextValue extends AuthState {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-export function AuthProvider({
+function AuthInternalProvider({
   children,
   initialSession = null,
 }: {
@@ -35,7 +40,26 @@ export function AuthProvider({
       const res = await fetch('/api/auth/session', { cache: 'no-store' })
       if (res.ok) {
         const data = await res.json()
-        setSession(data.session ?? null)
+        if (data?.user) {
+          setSession({
+            user: {
+              id: (data.user as any).id || 'usr_' + (data.user.email ? data.user.email.replace(/[^a-zA-Z0-9]/g, '_') : 'user'),
+              name: data.user.name || 'User',
+              email: data.user.email || '',
+              role: ((data.user as any).role as Role) || 'staff',
+              provider: 'next-auth',
+              image: data.user.image || '/images/doctors/doc_02.jpg',
+              designation: (data.user as any).designation,
+              department: (data.user as any).department,
+            },
+            createdAt: Date.now(),
+            expiresAt: data.expires ? new Date(data.expires).getTime() : Date.now() + 30 * 86400000,
+          })
+        } else if (data?.session) {
+          setSession(data.session)
+        } else {
+          setSession(null)
+        }
       } else {
         setSession(null)
       }
@@ -58,15 +82,15 @@ export function AuthProvider({
   const signInWithRole = async (roleKey: 'admin' | 'doctor' | 'staff' | 'patient', redirectTo?: string) => {
     setLoading(true)
     try {
-      const res = await fetch('/api/auth/demo-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: roleKey }),
+      const res = await nextAuthSignIn('credentials', {
+        role: roleKey,
+        isDemo: 'true',
+        redirect: false,
       })
-      const data = await res.json()
-      if (data.session) {
-        setSession(data.session)
-        const target = redirectTo || homeFor(data.session.user.role)
+
+      if (res?.ok) {
+        await fetchSession()
+        const target = redirectTo || homeFor(roleKey)
         startTransition(() => {
           router.push(target)
           router.refresh()
@@ -86,41 +110,29 @@ export function AuthProvider({
   ): Promise<{ error?: string; success?: boolean }> => {
     setLoading(true)
     try {
-      // OAuth Provider Login initiation
+      // 1. NextAuth OAuth (Google / GitHub)
       if (providerOrEmail === 'google' || providerOrEmail === 'github') {
-        const res = await fetch(`/api/auth/oauth?provider=${providerOrEmail}`, { method: 'POST' })
-        const data = await res.json()
-        if (data.url) {
-          window.location.href = data.url
-          return { success: true }
-        }
-        if (data.session) {
-          setSession(data.session)
-          const target = redirectTo || homeFor(data.session.user.role)
-          startTransition(() => {
-            router.push(target)
-            router.refresh()
-          })
-          return { success: true }
-        }
-        return { error: data.error || 'Failed to authenticate via OAuth' }
+        const target = redirectTo || '/dashboard'
+        await nextAuthSignIn(providerOrEmail, {
+          callbackUrl: target,
+        })
+        return { success: true }
       }
 
-      // Credentials Login
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: providerOrEmail, password }),
+      // 2. NextAuth Credentials Login
+      const res = await nextAuthSignIn('credentials', {
+        email: providerOrEmail,
+        password,
+        redirect: false,
       })
 
-      const data = await res.json()
-      if (!res.ok || data.error) {
-        return { error: data.error || 'Invalid credentials' }
+      if (res?.error) {
+        return { error: res.error || 'Invalid credentials' }
       }
 
-      if (data.session) {
-        setSession(data.session)
-        const target = redirectTo || homeFor(data.session.user.role)
+      if (res?.ok) {
+        await fetchSession()
+        const target = redirectTo || '/dashboard'
         startTransition(() => {
           router.push(target)
           router.refresh()
@@ -154,17 +166,22 @@ export function AuthProvider({
         return { error: resData.error || 'Registration failed' }
       }
 
-      if (resData.session) {
-        setSession(resData.session)
-        const target = redirectTo || '/?onboarding=true'
-        startTransition(() => {
-          router.push(target)
-          router.refresh()
+      // Automatically sign in with credentials after registration
+      if (data.password) {
+        await nextAuthSignIn('credentials', {
+          email: data.email,
+          password: data.password,
+          redirect: false,
         })
-        return { success: true }
       }
 
-      return { error: 'Registration failed' }
+      await fetchSession()
+      const target = redirectTo || '/?onboarding=true'
+      startTransition(() => {
+        router.push(target)
+        router.refresh()
+      })
+      return { success: true }
     } catch (err: unknown) {
       const errorObj = err as Error
       return { error: errorObj.message || 'An error occurred during registration.' }
@@ -176,12 +193,10 @@ export function AuthProvider({
   const signOut = async (redirectTo = '/sign-in') => {
     setLoading(true)
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
       setSession(null)
       localStorage.removeItem('remeet_onboarded')
-      startTransition(() => {
-        router.push(redirectTo)
-        router.refresh()
+      await nextAuthSignOut({
+        callbackUrl: redirectTo,
       })
     } catch (err) {
       console.error('Sign out error:', err)
@@ -233,6 +248,22 @@ export function AuthProvider({
     >
       {children}
     </AuthContext.Provider>
+  )
+}
+
+export function AuthProvider({
+  children,
+  initialSession = null,
+}: {
+  children: React.ReactNode
+  initialSession?: Session | null
+}) {
+  return (
+    <NextAuthSessionProvider>
+      <AuthInternalProvider initialSession={initialSession}>
+        {children}
+      </AuthInternalProvider>
+    </NextAuthSessionProvider>
   )
 }
 

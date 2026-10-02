@@ -151,6 +151,7 @@ export function ThemeToggle({ className }: { className?: string }) {
         <mask id={maskId}>
           <rect x="0" y="0" width="24" height="24" fill="white" />
           <motion.circle
+            initial={false}
             animate={{
               cx: isDark ? 16 : 26,
               cy: isDark ? 8 : 0,
@@ -165,6 +166,7 @@ export function ThemeToggle({ className }: { className?: string }) {
         <motion.circle
           cx="12"
           cy="12"
+          initial={false}
           animate={{
             r: isDark ? 8 : 4.5,
           }}

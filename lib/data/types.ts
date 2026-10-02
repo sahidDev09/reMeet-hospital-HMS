@@ -300,3 +300,22 @@ export type InvoiceQuery = {
 export type PatientInput = Omit<Patient, 'id' | 'mrn' | 'registeredAt' | 'lastVisitAt'>
 export type AppointmentInput = Omit<Appointment, 'id' | 'createdAt' | 'queueNo' | 'status'>
 export type PrescriptionInput = Omit<Prescription, 'id' | 'code' | 'issuedAt'>
+
+/* --- Verification & 2FA -------------------------------------------------- */
+
+export type VerificationStatus = 'pending' | 'approved' | 'rejected'
+
+export type DoctorVerificationRequest = {
+  id: string
+  fullName: string
+  designation: string
+  idNumber: string
+  email: string
+  idImageUrl?: string
+  status: VerificationStatus
+  otp?: string
+  otpExpiresAt?: number
+  isVerified?: boolean
+  createdAt: string
+}
+

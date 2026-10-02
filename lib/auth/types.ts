@@ -1,6 +1,6 @@
 import type { Role } from '@/lib/data/types'
 
-export type AuthProvider = 'google' | 'github' | 'credentials' | 'demo'
+export type AuthProvider = 'google' | 'github' | 'credentials' | 'demo' | 'next-auth'
 
 export interface AuthUser {
   id: string

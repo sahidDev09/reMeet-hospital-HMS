@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { getToken } from 'next-auth/jwt'
 import { verifyJWT, JWT_COOKIE_NAME } from '@/lib/auth/jwt'
 import { homeFor } from '@/lib/auth/role-meta'
+import type { Role } from '@/lib/data/types'
 
 // Protected route prefixes that require valid JWT authentication
 const PROTECTED_ROUTES = [
@@ -15,6 +17,9 @@ const PROTECTED_ROUTES = [
   '/billing',
   '/analytics',
   '/settings',
+  '/admin',
+  '/patient',
+  '/doctors',
 ]
 
 // Auth routes that authenticated users should be redirected away from
@@ -22,8 +27,26 @@ const AUTH_ROUTES = ['/sign-in', '/sign-up']
 
 export default async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl
-  const token = request.cookies.get(JWT_COOKIE_NAME)?.value
-  const user = token ? await verifyJWT(token) : null
+
+  // Verify NextAuth token first
+  const nextAuthToken = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || 'remeet-hospital-secure-jwt-secret-key-2026-v1',
+  })
+
+  // Fallback to custom JWT token
+  const legacyToken = request.cookies.get(JWT_COOKIE_NAME)?.value
+  const legacyUser = legacyToken ? await verifyJWT(legacyToken) : null
+
+  const user = nextAuthToken
+    ? {
+        id: (nextAuthToken.id as string) || nextAuthToken.sub || 'usr_oauth',
+        name: nextAuthToken.name || 'User',
+        email: nextAuthToken.email || '',
+        role: ((nextAuthToken.role as string) || 'staff') as Role,
+      }
+    : legacyUser
+
   const isAuthenticated = !!user
 
   // 1. Gating protected routes
@@ -40,6 +63,11 @@ export default async function proxy(request: NextRequest) {
     // Role-based route authorization: doctor role redirection
     if (user.role === 'doctor' && pathname.startsWith('/dashboard')) {
       return NextResponse.redirect(new URL('/portal', request.url))
+    }
+
+    // Non-admin attempting to access /admin routes
+    if (user.role !== 'admin' && pathname.startsWith('/admin')) {
+      return NextResponse.redirect(new URL(homeFor(user.role), request.url))
     }
   }
 

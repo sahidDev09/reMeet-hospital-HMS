@@ -71,5 +71,40 @@
     "createdAt": "2026-09-04T05:50:00.215Z",
     "updatedAt": "2026-09-04T05:50:00.215Z",
     "isFirstLogin": true
+  },
+  {
+    "id": "usr_1790938806789_vm553",
+    "name": "Nurse Alex",
+    "email": "alex@hospital.internal",
+    "role": "staff",
+    "provider": "credentials",
+    "image": "/images/doctors/doc_05.jpg",
+    "passwordHash": "e16210697bcc60ac4d918842666c0d7817837a542079ff15f9be744f9e2d076400c85175d51a2e1e8e01acda01817ffbc2235e1914044f37409f90345d299180",
+    "passwordSalt": "e746bbb1f8f8a788b73d1e69b5474a19",
+    "createdAt": "2026-10-02T11:00:06.789Z",
+    "updatedAt": "2026-10-02T11:00:06.789Z",
+    "isFirstLogin": true
+  },
+  {
+    "id": "github_219901639",
+    "name": "CrevoSys",
+    "email": "crevosysofficial@gmail.com",
+    "role": "staff",
+    "provider": "github",
+    "image": "https://avatars.githubusercontent.com/u/219901639?v=4",
+    "createdAt": "2026-10-02T11:02:53.037Z",
+    "updatedAt": "2026-10-02T11:02:53.037Z",
+    "isFirstLogin": true
+  },
+  {
+    "id": "google_107497260589224980022",
+    "name": "Sa Hid",
+    "email": "sahidofficial.yt@gmail.com",
+    "role": "staff",
+    "provider": "google",
+    "image": "https://lh3.googleusercontent.com/a/ACg8ocI5eENbokXXCSC4Sv7X_GGUp9sDzNKKz2szmSFawJgUuDIUFKY=s96-c",
+    "createdAt": "2026-10-02T11:16:55.482Z",
+    "updatedAt": "2026-10-02T11:16:55.482Z",
+    "isFirstLogin": true
   }
 ]

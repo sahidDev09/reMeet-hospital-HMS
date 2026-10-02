@@ -59,11 +59,37 @@ export const DEMO_ACCOUNTS: Record<string, AuthUser> = {
   },
 }
 
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth/auth-options'
+
 /**
- * Returns the currently active verified session from HTTP cookies using JWT.
- * Returns null if no valid, signed JWT token is present.
+ * Returns the currently active verified session from NextAuth or HTTP cookies using JWT.
+ * Returns null if no valid session is present.
  */
 export async function getSession(): Promise<Session | null> {
+  try {
+    const nextAuthSession = await getServerSession(authOptions)
+    if (nextAuthSession?.user) {
+      const u = nextAuthSession.user as any
+      return {
+        user: {
+          id: u.id || 'usr_' + (u.email ? u.email.replace(/[^a-zA-Z0-9]/g, '_') : 'oauth'),
+          name: u.name || 'User',
+          email: u.email || '',
+          role: (u.role as Role) || 'staff',
+          provider: 'next-auth',
+          image: u.image || '/images/doctors/doc_02.jpg',
+          designation: u.designation,
+          department: u.department,
+        },
+        createdAt: Date.now(),
+        expiresAt: Date.now() + JWT_MAX_AGE_SECONDS * 1000,
+      }
+    }
+  } catch (err) {
+    // Context where getServerSession isn't available
+  }
+
   const jar = await cookies()
   const token = jar.get(JWT_COOKIE_NAME)?.value
 
@@ -112,29 +138,42 @@ export async function auth() {
   }
 }
 
+import type { NextResponse } from 'next/server'
+
 /**
  * Creates and sets a new JWT session cookie.
  */
-export async function createSession(user: AuthUser): Promise<Session> {
-  const jar = await cookies()
+export async function createSession(user: AuthUser, response?: NextResponse): Promise<Session> {
   const token = await signJWT(user)
 
-  jar.set(JWT_COOKIE_NAME, token, {
+  const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'lax' as const,
     path: '/',
     maxAge: JWT_MAX_AGE_SECONDS,
-  })
+  }
 
-  // Sync role cookie for non-sensitive client UI reads
-  jar.set(ROLE_COOKIE, user.role, {
+  const roleCookieOptions = {
     httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'lax' as const,
     path: '/',
     maxAge: JWT_MAX_AGE_SECONDS,
-  })
+  }
+
+  try {
+    const jar = await cookies()
+    jar.set(JWT_COOKIE_NAME, token, cookieOptions)
+    jar.set(ROLE_COOKIE, user.role, roleCookieOptions)
+  } catch {
+    // cookies() might be immutable in some contexts
+  }
+
+  if (response) {
+    response.cookies.set(JWT_COOKIE_NAME, token, cookieOptions)
+    response.cookies.set(ROLE_COOKIE, user.role, roleCookieOptions)
+  }
 
   return {
     user,
@@ -146,29 +185,39 @@ export async function createSession(user: AuthUser): Promise<Session> {
 /**
  * Updates the user's role in the active session and re-issues a signed JWT.
  */
-export async function updateSessionRole(role: Role): Promise<Session | null> {
-  const jar = await cookies()
+export async function updateSessionRole(role: Role, response?: NextResponse): Promise<Session | null> {
   const user = await getCurrentUser()
   if (!user) return null
 
   user.role = role
   const token = await signJWT(user)
 
-  jar.set(JWT_COOKIE_NAME, token, {
+  const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'lax' as const,
     path: '/',
     maxAge: JWT_MAX_AGE_SECONDS,
-  })
+  }
 
-  jar.set(ROLE_COOKIE, role, {
+  const roleCookieOptions = {
     httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'lax' as const,
     path: '/',
     maxAge: JWT_MAX_AGE_SECONDS,
-  })
+  }
+
+  try {
+    const jar = await cookies()
+    jar.set(JWT_COOKIE_NAME, token, cookieOptions)
+    jar.set(ROLE_COOKIE, role, roleCookieOptions)
+  } catch {}
+
+  if (response) {
+    response.cookies.set(JWT_COOKIE_NAME, token, cookieOptions)
+    response.cookies.set(ROLE_COOKIE, role, roleCookieOptions)
+  }
 
   return {
     user,
@@ -180,8 +229,15 @@ export async function updateSessionRole(role: Role): Promise<Session | null> {
 /**
  * Clears the session cookie and signs the user out.
  */
-export async function destroySession(): Promise<void> {
-  const jar = await cookies()
-  jar.delete(JWT_COOKIE_NAME)
-  jar.delete(ROLE_COOKIE)
+export async function destroySession(response?: NextResponse): Promise<void> {
+  try {
+    const jar = await cookies()
+    jar.delete(JWT_COOKIE_NAME)
+    jar.delete(ROLE_COOKIE)
+  } catch {}
+
+  if (response) {
+    response.cookies.delete(JWT_COOKIE_NAME)
+    response.cookies.delete(ROLE_COOKIE)
+  }
 }

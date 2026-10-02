@@ -147,7 +147,7 @@ export function StatBand({ brandName = 'reMeet Hospital' }: StatBandProps) {
               className="size-7 rounded-full object-cover ring-2 ring-white dark:ring-surface-solid"
             />
             <Image
-              src="https://images.unsplash.com/photo-1594824813620-3b08e5e6df7e?auto=format&fit=crop&w=96&h=96&q=80"
+              src="/images/doctors/doc_02.jpg"
               alt="Medical Team Member 2"
               width={28}
               height={28}
