@@ -60,13 +60,22 @@ export default async function proxy(request: NextRequest) {
       return NextResponse.redirect(signInUrl)
     }
 
-    // Role-based route authorization: doctor role redirection
-    if (user.role === 'doctor' && pathname.startsWith('/dashboard')) {
-      return NextResponse.redirect(new URL('/portal', request.url))
+    // 1. Patient boundary: Patients can never access other roles (doctor, admin, staff)
+    if (user.role === 'patient') {
+      if (pathname !== '/patient' && !pathname.startsWith('/patient/')) {
+        return NextResponse.redirect(new URL('/patient', request.url))
+      }
     }
 
-    // Non-admin attempting to access /admin routes
-    if (user.role !== 'admin' && pathname.startsWith('/admin')) {
+    // 2. Doctor boundary: Doctor attempting to access dashboard, admin or analytics
+    if (user.role === 'doctor') {
+      if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/analytics')) {
+        return NextResponse.redirect(new URL('/portal', request.url))
+      }
+    }
+
+    // 3. Non-admin attempting to access /admin or /analytics routes
+    if (user.role !== 'admin' && (pathname.startsWith('/admin') || pathname.startsWith('/analytics'))) {
       return NextResponse.redirect(new URL(homeFor(user.role), request.url))
     }
   }

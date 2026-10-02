@@ -20,10 +20,10 @@ export async function getRole(): Promise<Role> {
   }
 
   const userEmail = user.email?.toLowerCase()
-  const isAdminAccount = userEmail === 'iambotforwork72@gmail.com'
+  const isAdminAccount = userEmail === 'iambotforwork72@gmail.com' || userEmail === 'admin@remeet.health'
 
   if (user.role && isRole(user.role)) {
-    if (isAdminAccount && user.role === 'doctor') return 'admin'
+    if (isAdminAccount && (user.role === 'doctor' || user.role === 'staff')) return 'admin'
     return user.role
   }
 
@@ -38,7 +38,20 @@ export async function requireRole(...allowed: Role[]): Promise<Role> {
   }
 
   const role = await getRole()
+
+  // Verification check: Doctors and front desk staff require administrator approval
+  if (role === 'doctor' || role === 'staff') {
+    const { isUserVerified } = await import('@/lib/data/verifications')
+    const verified = await isUserVerified(user.email, role)
+    if (!verified) {
+      redirect('/verification-pending')
+    }
+  }
+
   if (!allowed.includes(role)) {
+    if (role === 'patient') {
+      redirect('/patient')
+    }
     redirect(role === 'doctor' ? '/portal' : '/dashboard')
   }
   return role

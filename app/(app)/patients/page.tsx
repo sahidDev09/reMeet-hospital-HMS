@@ -13,6 +13,8 @@ import { listPatients } from '@/lib/data/patients'
 import type { BloodGroup, Gender } from '@/lib/data/types'
 import { age, date, initials, relativeDays } from '@/lib/format'
 
+import { requireRole } from '@/lib/auth/roles'
+
 export const metadata: Metadata = { title: 'Patients' }
 
 const BLOOD_GROUPS: BloodGroup[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
@@ -22,6 +24,7 @@ export default async function PatientsPage({
 }: {
   searchParams: Promise<{ q?: string; gender?: string; blood?: string; page?: string }>
 }) {
+  await requireRole('admin', 'staff', 'doctor')
   const params = await searchParams
   const page = Number(params.page ?? 1)
 

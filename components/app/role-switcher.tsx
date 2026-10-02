@@ -20,13 +20,15 @@ export function RoleSwitcher({ role }: { role: Role }) {
   const router = useRouter()
   const [pending, startTransition] = React.useTransition()
 
-  if (process.env.NODE_ENV === 'production') return null
+  if (process.env.NODE_ENV === 'production' || role === 'patient') return null
 
   const email = user?.email?.toLowerCase()
-  const isAdminAccount = email === 'iambotforwork72@gmail.com' || role === 'admin'
+  const isAdminAccount = email === 'iambotforwork72@gmail.com' || email === 'admin@remeet.health' || role === 'admin'
 
-  // Administrator accounts (e.g. iambotforwork72@gmail.com) only see Administrator and Front desk
-  const availableRoles = isAdminAccount ? ROLES.filter((r) => r !== 'doctor') : ROLES
+  // Administrator accounts only see Administrator and Front desk; patients never see switcher
+  const availableRoles = isAdminAccount
+    ? ROLES.filter((r) => r !== 'doctor' && r !== 'patient')
+    : ROLES.filter((r) => r !== 'patient')
 
   return (
     <label className="flex items-center gap-2" title="Development only — not access control">

@@ -48,7 +48,7 @@ export function UserMenu() {
 
   const handleSignOut = async () => {
     setSigningOut(true)
-    await signOut()
+    await signOut('/')
   }
 
   const roleIcon =
@@ -56,6 +56,8 @@ export function UserMenu() {
       <Stethoscope className="size-3.5 text-indigo-500" />
     ) : role === 'admin' ? (
       <ShieldCheck className="size-3.5 text-accent" />
+    ) : role === 'patient' ? (
+      <User className="size-3.5 text-amber-500" />
     ) : (
       <Building2 className="size-3.5 text-teal-500" />
     )
@@ -118,15 +120,27 @@ export function UserMenu() {
 
           {/* Quick Navigation Items */}
           <div className="py-1">
-            <DropdownMenu.Item asChild>
-              <Link
-                href={role === 'doctor' ? '/portal' : '/dashboard'}
-                className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-ink transition-colors hover:bg-accent-soft hover:text-accent focus:bg-accent-soft focus:text-accent focus:outline-none"
-              >
-                <LayoutDashboard className="size-4 text-ink-soft" />
-                <span>{role === 'doctor' ? 'Doctor Portal' : 'Hospital Dashboard'}</span>
-              </Link>
-            </DropdownMenu.Item>
+            {role === 'patient' ? (
+              <DropdownMenu.Item asChild>
+                <Link
+                  href="/patient"
+                  className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-ink transition-colors hover:bg-accent-soft hover:text-accent focus:bg-accent-soft focus:text-accent focus:outline-none"
+                >
+                  <User className="size-4 text-amber-500" />
+                  <span>My Patient Portal</span>
+                </Link>
+              </DropdownMenu.Item>
+            ) : (
+              <DropdownMenu.Item asChild>
+                <Link
+                  href={role === 'doctor' ? '/portal' : '/dashboard'}
+                  className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-ink transition-colors hover:bg-accent-soft hover:text-accent focus:bg-accent-soft focus:text-accent focus:outline-none"
+                >
+                  <LayoutDashboard className="size-4 text-ink-soft" />
+                  <span>{role === 'doctor' ? 'Doctor Portal' : 'Hospital Dashboard'}</span>
+                </Link>
+              </DropdownMenu.Item>
+            )}
 
             {role === 'doctor' && (
               <DropdownMenu.Item asChild>
@@ -141,43 +155,47 @@ export function UserMenu() {
             )}
           </div>
 
-          {/* Switch Active Role */}
-          <DropdownMenu.Separator className="my-1 h-px bg-line" />
-          <div className="px-2.5 py-1.5">
-            <p className="text-[0.625rem] font-semibold uppercase tracking-wider text-ink-faint">
-              Switch Role View
-            </p>
-            <div className="mt-1 flex flex-col gap-0.5">
-              {ROLES.map((r) => {
-                const isActive = r === role
-                return (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => switchRole(r)}
-                    className={cn(
-                      'flex w-full cursor-pointer items-center justify-between rounded-md px-2 py-1.5 text-xs transition-colors',
-                      isActive
-                        ? 'bg-accent/15 font-semibold text-accent'
-                        : 'text-ink-soft hover:bg-accent-soft/60 hover:text-ink',
-                    )}
-                  >
-                    <span className="flex items-center gap-2">
-                      {r === 'doctor' ? (
-                        <Stethoscope className="size-3.5" />
-                      ) : r === 'admin' ? (
-                        <ShieldCheck className="size-3.5" />
-                      ) : (
-                        <Building2 className="size-3.5" />
-                      )}
-                      {ROLE_LABEL[r]}
-                    </span>
-                    {isActive && <Check className="size-3 text-accent" />}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
+          {/* Switch Active Role - strictly hidden for patients */}
+          {role !== 'patient' && (
+            <>
+              <DropdownMenu.Separator className="my-1 h-px bg-line" />
+              <div className="px-2.5 py-1.5">
+                <p className="text-[0.625rem] font-semibold uppercase tracking-wider text-ink-faint">
+                  Switch Role View
+                </p>
+                <div className="mt-1 flex flex-col gap-0.5">
+                  {ROLES.filter((r) => r !== 'patient').map((r) => {
+                    const isActive = r === role
+                    return (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => switchRole(r)}
+                        className={cn(
+                          'flex w-full cursor-pointer items-center justify-between rounded-md px-2 py-1.5 text-xs transition-colors',
+                          isActive
+                            ? 'bg-accent/15 font-semibold text-accent'
+                            : 'text-ink-soft hover:bg-accent-soft/60 hover:text-ink',
+                        )}
+                      >
+                        <span className="flex items-center gap-2">
+                          {r === 'doctor' ? (
+                            <Stethoscope className="size-3.5" />
+                          ) : r === 'admin' ? (
+                            <ShieldCheck className="size-3.5" />
+                          ) : (
+                            <Building2 className="size-3.5" />
+                          )}
+                          {ROLE_LABEL[r]}
+                        </span>
+                        {isActive && <Check className="size-3 text-accent" />}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Theme Option */}
           <DropdownMenu.Separator className="my-1 h-px bg-line" />

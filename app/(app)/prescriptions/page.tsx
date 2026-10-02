@@ -13,6 +13,8 @@ import { getDoctor } from '@/lib/data/doctors'
 import { listPrescriptions } from '@/lib/data/prescriptions'
 import { date, dosage, relativeDays } from '@/lib/format'
 
+import { requireRole } from '@/lib/auth/roles'
+
 export const metadata: Metadata = { title: 'Prescriptions' }
 
 /**
@@ -27,6 +29,7 @@ export default async function PrescriptionsPage({
 }: {
   searchParams: Promise<{ q?: string; doctorId?: string; patientId?: string; page?: string }>
 }) {
+  await requireRole('admin', 'staff', 'doctor')
   const params = await searchParams
   const page = Number(params.page ?? 1)
 

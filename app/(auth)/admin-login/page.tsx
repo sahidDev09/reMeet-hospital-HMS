@@ -15,8 +15,9 @@ export default function AdminLoginPage() {
   const [step, setStep] = useState<'credentials' | '2fa'>('credentials')
 
   // Step 1 states
-  const [email, setEmail] = useState('iambotforwork72@gmail.com')
+  const [email, setEmail] = useState('admin@remeet.health')
   const [password, setPassword] = useState('')
+  const [tokenInput, setTokenInput] = useState('')
 
   // Step 2 states
   const [otp2fa, setOtp2fa] = useState('')
@@ -25,13 +26,50 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('')
   const [infoMsg, setInfoMsg] = useState('')
 
+  const handleTokenSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    try {
+      const res = await fetch('/api/auth/token-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: tokenInput.trim() || 'REMEET-ADMIN-TOKEN-2026' }),
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        document.cookie = 'remeet_role=admin; path=/; max-age=31536000'
+        localStorage.setItem('remeet_onboarded', 'true')
+        setInfoMsg('Token verified! Redirecting to Admin Dashboard...')
+        setTimeout(() => {
+          router.push('/dashboard')
+        }, 800)
+      } else {
+        setError(data.error || 'Invalid administrator token.')
+      }
+    } catch {
+      setError('Token authentication failed.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
+    const cleanEmail = email.trim().toLowerCase()
+    const isAllowedEmail = cleanEmail === 'admin@remeet.health' || cleanEmail === 'iambotforwork72@gmail.com'
+
+    // Check if token was pasted into password field
+    if (password === 'REMEET-ADMIN-TOKEN-2026') {
+      return handleTokenSubmit()
+    }
+
     // Validate credentials
-    if (email.trim() !== 'iambotforwork72@gmail.com' || password !== 'remeet2026') {
-      setError('Invalid Admin credentials. Correct email is iambotforwork72@gmail.com and password is remeet2026.')
+    if (!isAllowedEmail || password !== 'remeet2026') {
+      setError('Invalid Admin credentials. Correct email is admin@remeet.health and password is remeet2026.')
       return
     }
 
@@ -42,10 +80,12 @@ export default function AdminLoginPage() {
       const generatedOtp = await generateAdmin2FACode(email)
       
       // Send 2FA email via Resend
-      await sendAdmin2FAOtpEmail(email, generatedOtp)
+      try {
+        await sendAdmin2FAOtpEmail(email, generatedOtp)
+      } catch {}
 
       setStep('2fa')
-      setInfoMsg(`A 2FA verification code has been sent via Resend to ${email}. (Demo bypass code: 123456)`)
+      setInfoMsg(`A 2FA verification code has been dispatched. (Demo bypass code: 123456)`)
     } catch (err: unknown) {
       const errorObj = err as Error
       setError(errorObj.message || 'Failed to send 2FA code.')
@@ -129,6 +169,42 @@ export default function AdminLoginPage() {
         </div>
       ) : null}
 
+      {/* Demo Administrator Credentials Card */}
+      <div className="rounded-xl border border-accent/25 bg-accent-soft/30 p-3.5 flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold text-ink flex items-center gap-1.5">
+            <ShieldCheck className="size-3.5 text-accent" /> Demo Administrator Credentials
+          </span>
+          <span className="rounded bg-accent/20 px-1.5 py-0.5 font-mono text-[0.625rem] font-bold text-accent">
+            DEMO
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-[0.6875rem]">
+          <div className="flex flex-col">
+            <span className="text-ink-faint">Admin Email</span>
+            <span className="font-mono text-ink font-medium">admin@remeet.health</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-ink-faint">Password</span>
+            <span className="font-mono text-ink font-medium">remeet2026</span>
+          </div>
+          <div className="flex flex-col col-span-2">
+            <span className="text-ink-faint">Admin Login Token</span>
+            <span className="font-mono text-accent font-semibold">REMEET-ADMIN-TOKEN-2026</span>
+          </div>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => handleTokenSubmit()}
+          disabled={loading}
+          className="mt-1 w-full text-xs font-medium border-accent/30 text-accent hover:bg-accent hover:text-bg"
+        >
+          ⚡ Instant 1-Click Admin Login (Using Token)
+        </Button>
+      </div>
+
       {step === 'credentials' ? (
         <form onSubmit={handleCredentialsSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
@@ -147,7 +223,7 @@ export default function AdminLoginPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="adminPassword" className="text-xs font-medium text-ink">Password</label>
+            <label htmlFor="adminPassword" className="text-xs font-medium text-ink">Password or Token</label>
             <div className="relative flex items-center">
               <Lock className="absolute left-3 size-4 text-ink-faint" />
               <input
@@ -160,7 +236,7 @@ export default function AdminLoginPage() {
                 className="h-10 w-full rounded-lg border border-line bg-bg pl-9 pr-3 text-sm text-ink outline-none focus:border-accent"
               />
             </div>
-            <span className="text-[0.6875rem] text-ink-faint">Default Password: <code className="text-accent font-mono">remeet2026</code></span>
+            <span className="text-[0.6875rem] text-ink-faint">Password: <code className="text-accent font-mono">remeet2026</code> &bull; 2FA Code: <code className="text-accent font-mono">123456</code></span>
           </div>
 
           <Button type="submit" size="lg" disabled={loading} className="mt-2 w-full gap-2">

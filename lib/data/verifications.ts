@@ -2,9 +2,7 @@
 
 import fs from 'fs'
 import path from 'path'
-import type { VerificationStatus, DoctorVerificationRequest } from '@/lib/data/types'
-
-export type { VerificationStatus, DoctorVerificationRequest }
+import type { VerificationStatus, DoctorVerificationRequest, Role } from '@/lib/data/types'
 
 const DATA_DIR = path.join(process.cwd(), 'data')
 const VERIFICATIONS_FILE = path.join(DATA_DIR, 'verifications.json')
@@ -18,7 +16,19 @@ function getInitialRequests(): DoctorVerificationRequest[] {
       designation: 'Senior Cardiologist',
       idNumber: 'BMDC-98421',
       email: 'dr.thorne@remeet.health',
+      role: 'doctor',
       idImageUrl: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=400&q=80',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'ver_02',
+      fullName: 'Clara Bennett',
+      designation: 'Front Desk Reception Officer',
+      idNumber: 'DESK-4401',
+      email: 'clara.desk@remeet.health',
+      role: 'staff',
+      idImageUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
       status: 'pending',
       createdAt: new Date().toISOString(),
     },
@@ -91,14 +101,47 @@ export async function getVerificationByEmail(email: string): Promise<DoctorVerif
   return list.find((v) => v.email.toLowerCase().trim() === cleanEmail)
 }
 
+/**
+ * Checks whether an account has been verified by the administrator.
+ * Admins and patients are always permitted.
+ * Demo accounts are pre-approved.
+ * Doctors and Front Desk staff require administrator verification.
+ */
+export async function isUserVerified(email: string, role?: Role): Promise<boolean> {
+  if (!email) return false
+  const cleanEmail = email.toLowerCase().trim()
+
+  // Admins & Patients do not require staff/clinical verification
+  if (role === 'admin' || role === 'patient') return true
+
+  // Standard demo accounts are pre-approved
+  const PRE_APPROVED_EMAILS = [
+    'admin@remeet.health',
+    'iambotforwork72@gmail.com',
+    'dr.eleanor@remeet.health',
+    'staff@remeet.health',
+    'patient@remeet.health',
+  ]
+  if (PRE_APPROVED_EMAILS.includes(cleanEmail)) {
+    return true
+  }
+
+  // Check verifications record
+  const req = await getVerificationByEmail(cleanEmail)
+  if (!req) return false
+
+  return req.status === 'approved' || !!req.isVerified
+}
+
 export async function createVerificationRequest(
-  input: Omit<DoctorVerificationRequest, 'id' | 'status' | 'createdAt'>
+  input: Omit<DoctorVerificationRequest, 'id' | 'status' | 'createdAt'> & { role?: 'doctor' | 'staff' }
 ): Promise<DoctorVerificationRequest> {
   const list = loadVerifications()
   const cleanEmail = input.email.toLowerCase().trim()
   const newReq: DoctorVerificationRequest = {
     ...input,
     email: cleanEmail,
+    role: input.role || 'doctor',
     id: `ver_${Date.now()}`,
     status: 'pending',
     createdAt: new Date().toISOString(),
@@ -130,6 +173,7 @@ export async function approveVerificationRequest(
   req.status = 'approved'
   req.otp = otp
   req.otpExpiresAt = otpExpiresAt
+  req.isVerified = true
 
   saveVerifications(list)
   return { request: req, otp }
@@ -138,7 +182,7 @@ export async function approveVerificationRequest(
 export async function verifyDoctorOtp(
   email: string,
   otpInput: string
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; role?: 'doctor' | 'staff' }> {
   const list = loadVerifications()
   const cleanEmail = email.toLowerCase().trim()
   const req = list.find((v) => v.email.toLowerCase().trim() === cleanEmail)
@@ -158,7 +202,8 @@ export async function verifyDoctorOtp(
 
   req.isVerified = true
   saveVerifications(list)
-  return { success: true, message: 'OTP verified successfully! Unlocking Doctor Dashboard...' }
+  const targetName = req.role === 'staff' ? 'Front Desk Dashboard' : 'Doctor Dashboard'
+  return { success: true, message: `OTP verified successfully! Unlocking ${targetName}...`, role: req.role || 'doctor' }
 }
 
 export async function generateAdmin2FACode(email: string): Promise<string> {

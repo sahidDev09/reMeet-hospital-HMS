@@ -25,6 +25,7 @@ export function SignInForm() {
   const [showPassword, setShowPassword] = React.useState(false)
   const [error, setError] = React.useState('')
   const [pendingProvider, setPendingProvider] = React.useState<string | null>(null)
+  const [tokenCopied, setTokenCopied] = React.useState(false)
 
   React.useEffect(() => {
     const errorParam = searchParams.get('error')
@@ -33,10 +34,46 @@ export function SignInForm() {
     }
   }, [searchParams])
 
+  const handleTokenLogin = async (token = 'REMEET-ADMIN-TOKEN-2026') => {
+    setError('')
+    setPendingProvider('token')
+    try {
+      const res = await fetch('/api/auth/token-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        document.cookie = 'remeet_role=admin; path=/; max-age=31536000'
+        localStorage.setItem('remeet_onboarded', 'true')
+        window.location.href = redirectTarget || '/dashboard'
+      } else {
+        setError(data.error || 'Token login failed.')
+      }
+    } catch {
+      setError('Token authentication failed.')
+    } finally {
+      setPendingProvider(null)
+    }
+  }
+
+  const handleFillAdmin = () => {
+    setEmail('admin@remeet.health')
+    setPassword('remeet2026')
+    setError('')
+  }
+
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email) return
     setError('')
+
+    // Check if token entered as password or email
+    if (password === 'REMEET-ADMIN-TOKEN-2026' || email === 'REMEET-ADMIN-TOKEN-2026') {
+      return handleTokenLogin('REMEET-ADMIN-TOKEN-2026')
+    }
+
     setPendingProvider('credentials')
 
     const res = await signIn(email, password, redirectTarget)
@@ -124,6 +161,66 @@ export function SignInForm() {
           )}
           <span>GitHub</span>
         </button>
+      </div>
+
+      {/* Divider */}
+      <div className="relative flex items-center justify-center">
+        <div className="w-full border-t border-line" />
+        <span className="absolute bg-surface px-2 text-[0.6875rem] uppercase tracking-wider text-ink-faint">
+          or demo access
+        </span>
+      </div>
+
+      {/* Demo Administrator Credentials & Token Card */}
+      <div className="rounded-xl border border-accent/25 bg-accent-soft/30 p-3.5 flex flex-col gap-2.5 text-left">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold text-ink flex items-center gap-1.5">
+            <ShieldCheck className="size-3.5 text-accent" /> Demo Administrator Credentials
+          </span>
+          <span className="rounded bg-accent/20 px-1.5 py-0.5 font-mono text-[0.625rem] font-bold text-accent">
+            DEMO
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-[0.6875rem]">
+          <div className="flex flex-col">
+            <span className="text-ink-faint">Email</span>
+            <span className="font-mono text-ink font-semibold select-all">admin@remeet.health</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-ink-faint">Password</span>
+            <span className="font-mono text-ink font-semibold select-all">remeet2026</span>
+          </div>
+          <div className="flex flex-col col-span-2 pt-1 border-t border-accent/15">
+            <span className="text-ink-faint">Login Token (Direct Auth)</span>
+            <span className="font-mono text-accent font-semibold select-all">REMEET-ADMIN-TOKEN-2026</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 pt-1">
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => handleTokenLogin()}
+            disabled={pendingProvider === 'token' || isLoading}
+            className="flex-1 text-xs gap-1.5 shadow-sm"
+          >
+            {pendingProvider === 'token' ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              '⚡ 1-Click Admin Login'
+            )}
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleFillAdmin}
+            className="text-xs text-ink-soft hover:text-ink"
+          >
+            Auto-fill
+          </Button>
+        </div>
       </div>
 
       {/* Divider */}

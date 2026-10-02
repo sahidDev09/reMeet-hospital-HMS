@@ -312,10 +312,13 @@ export type DoctorVerificationRequest = {
   idNumber: string
   email: string
   idImageUrl?: string
+  role?: 'doctor' | 'staff'
   status: VerificationStatus
   otp?: string
   otpExpiresAt?: number
   isVerified?: boolean
   createdAt: string
 }
+
+export type VerificationRequest = DoctorVerificationRequest
 

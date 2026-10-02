@@ -41,7 +41,10 @@ export async function generateMetadata({
  * any of them behind a click is exactly the kind of small convenience that causes
  * a real mistake. The page is long on purpose.
  */
+import { requireRole } from '@/lib/auth/roles'
+
 export default async function PatientPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireRole('admin', 'staff', 'doctor')
   const { id } = await params
   const patient = await getPatient(id)
   if (!patient) notFound()

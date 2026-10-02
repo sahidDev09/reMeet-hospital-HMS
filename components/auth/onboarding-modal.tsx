@@ -59,7 +59,7 @@ export function OnboardingModal() {
       const hasOnboarded = typeof window !== 'undefined' ? localStorage.getItem('remeet_onboarded') : null
       const userEmail = user?.email?.toLowerCase()
       const isRoleAdmin = user?.role === 'admin'
-      const isAdminUser = userEmail === 'iambotforwork72@gmail.com' || isRoleAdmin
+      const isAdminUser = userEmail === 'iambotforwork72@gmail.com' || userEmail === 'admin@remeet.health' || isRoleAdmin
 
       // If user is Admin, DO NOT show onboarding role selection modal unless forced
       if (isAdminUser && !forceOnboarding) {
@@ -114,7 +114,7 @@ export function OnboardingModal() {
       document.cookie = 'remeet_role=staff; path=/; max-age=31536000'
       await switchRole('staff')
       handleClose()
-      router.push('/dashboard')
+      router.push('/staff-verification')
     } else if (selectedRole === 'patient') {
       document.cookie = 'remeet_role=patient; path=/; max-age=31536000'
       await switchRole('patient')
@@ -195,8 +195,10 @@ export function OnboardingModal() {
   // --- Admin Login & 2FA Handler ---
   const handleAdminCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (adminEmail.trim() !== 'iambotforwork72@gmail.com' || adminPassword !== 'remeet2026') {
-      setError('Invalid Admin credentials. (Email: iambotforwork72@gmail.com, Password: remeet2026)')
+    const cleanAdminEmail = adminEmail.trim().toLowerCase()
+    const isAllowedEmail = cleanAdminEmail === 'iambotforwork72@gmail.com' || cleanAdminEmail === 'admin@remeet.health'
+    if (!isAllowedEmail || adminPassword !== 'remeet2026') {
+      setError('Invalid Admin credentials. (Email: admin@remeet.health, Password: remeet2026)')
       return
     }
 

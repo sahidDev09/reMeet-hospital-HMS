@@ -46,6 +46,21 @@ function getDefaultUsers(): StoredUser[] {
     {
       id: 'usr_admin_01',
       name: 'Hospital Administrator',
+      email: 'admin@remeet.health',
+      role: 'admin',
+      provider: 'credentials',
+      image: '/images/doctors/doc_02.jpg',
+      designation: 'Chief Medical Director',
+      department: 'Hospital Administration',
+      passwordHash: adminCreds.hash,
+      passwordSalt: adminCreds.salt,
+      createdAt: now,
+      updatedAt: now,
+      isFirstLogin: false,
+    },
+    {
+      id: 'usr_admin_02',
+      name: 'Hospital Administrator',
       email: 'iambotforwork72@gmail.com',
       role: 'admin',
       provider: 'credentials',
@@ -267,7 +282,7 @@ export async function findOrCreateOAuthUser(data: {
   } else {
     // Create new OAuth user
     isNewUser = true
-    const isAdmin = cleanEmail === 'iambotforwork72@gmail.com'
+    const isAdmin = cleanEmail === 'iambotforwork72@gmail.com' || cleanEmail === 'admin@remeet.health'
     user = {
       id: `${data.provider}_${data.providerId || Date.now()}`,
       name: data.name || (data.provider === 'google' ? 'Google User' : 'GitHub User'),

@@ -1,5 +1,20 @@
 [
   {
+    "id": "usr_admin_00",
+    "name": "Hospital Administrator",
+    "email": "admin@remeet.health",
+    "role": "admin",
+    "provider": "credentials",
+    "image": "/images/doctors/doc_02.jpg",
+    "designation": "Chief Medical Director",
+    "department": "Hospital Administration",
+    "passwordHash": "8193dcdbbbf73dd3461fa87c62ee189015b5bb669e2a7c4d72396ff0bacc96e112f0ded36a943d45b0c4ad572f843b7291600f2de25a51223a31d5cd3403820c",
+    "passwordSalt": "admin_salt_8472",
+    "createdAt": "2026-09-04T05:46:46.291Z",
+    "updatedAt": "2026-09-04T05:46:46.291Z",
+    "isFirstLogin": false
+  },
+  {
     "id": "usr_admin_01",
     "name": "Hospital Administrator",
     "email": "iambotforwork72@gmail.com",
@@ -100,11 +115,37 @@
     "id": "google_107497260589224980022",
     "name": "Sa Hid",
     "email": "sahidofficial.yt@gmail.com",
-    "role": "staff",
+    "role": "patient",
     "provider": "google",
     "image": "https://lh3.googleusercontent.com/a/ACg8ocI5eENbokXXCSC4Sv7X_GGUp9sDzNKKz2szmSFawJgUuDIUFKY=s96-c",
     "createdAt": "2026-10-02T11:16:55.482Z",
-    "updatedAt": "2026-10-02T11:16:55.482Z",
+    "updatedAt": "2026-10-02T11:59:50.417Z",
+    "isFirstLogin": false
+  },
+  {
+    "id": "usr_1790943645387_v0zfx",
+    "name": "Dr. New Test",
+    "email": "dr.newtest@hospital.com",
+    "role": "doctor",
+    "provider": "credentials",
+    "image": "/images/doctors/doc_05.jpg",
+    "passwordHash": "1a14e8034592ea18ffe90cf41d2b880658c0df7aa384aa1486e75ec6531f58cb2ac4bbb2f58acd89ef07755637f848c9a4ce4158ccdbc07dc6e4a2e4869b163e",
+    "passwordSalt": "6bef48df6d98de02d64570368e20be6c",
+    "createdAt": "2026-10-02T12:20:45.387Z",
+    "updatedAt": "2026-10-02T12:20:45.387Z",
+    "isFirstLogin": true
+  },
+  {
+    "id": "usr_1790943893390_0hn70",
+    "name": "Desk Alex",
+    "email": "desk.alex@hospital.com",
+    "role": "staff",
+    "provider": "credentials",
+    "image": "/images/doctors/doc_05.jpg",
+    "passwordHash": "d06b7f6c4624ea4d004579d040c29afe0ea96ca879f303855ae2edf09ee2c79ea9123801e326e4e3d203259a68fc656797c2b368173dba05c7c4ab3f4a168089",
+    "passwordSalt": "faf0a81ea3ae395728d510281edc1918",
+    "createdAt": "2026-10-02T12:24:53.390Z",
+    "updatedAt": "2026-10-02T12:24:53.390Z",
     "isFirstLogin": true
   }
 ]

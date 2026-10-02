@@ -18,7 +18,7 @@ export default function OnboardingPage() {
     if (!selectedRole) return
     setIsNavigating(true)
 
-    const targetRole = selectedRole === 'patient' ? 'staff' : selectedRole
+    const targetRole = selectedRole
 
     try {
       await fetch('/api/auth/demo-login', {
@@ -34,7 +34,7 @@ export default function OnboardingPage() {
     localStorage.setItem('remeet_onboarded', 'true')
 
     if (selectedRole === 'staff') {
-      router.push('/dashboard')
+      router.push('/staff-verification')
     } else if (selectedRole === 'doctor') {
       router.push('/doctor-verification')
     } else if (selectedRole === 'patient') {
@@ -76,8 +76,8 @@ export default function OnboardingPage() {
           </div>
           <h3 className="mt-3 font-display font-semibold text-ink">Front Desk</h3>
           <p className="mt-1 text-xs text-ink-soft">Hospital staff & reception desk flow</p>
-          <span className="mt-3 inline-flex items-center text-xs font-medium text-accent">
-            Instant Access
+          <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-amber-500">
+            <ShieldCheck className="size-3" /> Verification Req.
           </span>
         </button>
 

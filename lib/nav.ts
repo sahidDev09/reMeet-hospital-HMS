@@ -39,7 +39,7 @@ export const NAV: NavGroup[] = [
         icon: LayoutDashboard,
         roles: ['admin', 'staff'],
       },
-      { href: '/admin/verifications', label: 'Doctor Approvals', icon: ShieldCheck, roles: ['admin'] },
+      { href: '/admin/verifications', label: 'Doctor & Staff Approvals', icon: ShieldCheck, roles: ['admin'] },
       { href: '/portal', label: 'My clinic', icon: Activity, roles: ['doctor'] },
       { href: '/analytics', label: 'Analytics', icon: BarChart3, roles: ['admin'] },
     ],
@@ -59,6 +59,12 @@ export const NAV: NavGroup[] = [
       { href: '/pharmacy', label: 'Pharmacy', icon: Pill, roles: ['admin', 'staff'] },
       { href: '/pos', label: 'Point of sale', icon: ScanLine, roles: ['admin', 'staff'] },
       { href: '/billing', label: 'Billing', icon: Receipt, roles: ['admin', 'staff'] },
+    ],
+  },
+  {
+    label: 'Patient',
+    items: [
+      { href: '/patient', label: 'My Medical File', icon: ClipboardList, roles: ['patient'] },
     ],
   },
 ]

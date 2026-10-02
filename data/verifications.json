@@ -1,0 +1,44 @@
+[
+  {
+    "fullName": "Desk Alex",
+    "email": "desk.alex@hospital.com",
+    "designation": "Front Desk Staff",
+    "idNumber": "DESK-9840",
+    "role": "staff",
+    "id": "ver_1790943893391",
+    "status": "pending",
+    "createdAt": "2026-10-02T12:24:53.391Z"
+  },
+  {
+    "fullName": "Dr. New Test",
+    "email": "dr.newtest@hospital.com",
+    "designation": "Clinical Practitioner",
+    "idNumber": "DOC-8108",
+    "role": "doctor",
+    "id": "ver_1790943645393",
+    "status": "pending",
+    "createdAt": "2026-10-02T12:20:45.393Z"
+  },
+  {
+    "id": "ver_01",
+    "fullName": "Aris Thorne",
+    "designation": "Senior Cardiologist",
+    "idNumber": "BMDC-98421",
+    "email": "dr.thorne@remeet.health",
+    "role": "doctor",
+    "idImageUrl": "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=400&q=80",
+    "status": "pending",
+    "createdAt": "2026-10-02T12:20:45.393Z"
+  },
+  {
+    "id": "ver_02",
+    "fullName": "Clara Bennett",
+    "designation": "Front Desk Reception Officer",
+    "idNumber": "DESK-4401",
+    "email": "clara.desk@remeet.health",
+    "role": "staff",
+    "idImageUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
+    "status": "pending",
+    "createdAt": "2026-10-02T12:20:45.393Z"
+  }
+]

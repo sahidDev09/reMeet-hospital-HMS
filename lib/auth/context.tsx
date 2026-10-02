@@ -190,22 +190,59 @@ function AuthInternalProvider({
     }
   }
 
-  const signOut = async (redirectTo = '/sign-in') => {
+  const signOut = async (redirectTo = '/') => {
     setLoading(true)
     try {
+      // 1. Invalidate server session & delete cookies
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' })
+      } catch {}
+
+      // 2. Clear client storage & cookies
+      try {
+        const clientCookies = [
+          'remeet_token',
+          'remeet_jwt',
+          'remeet_role',
+          'next-auth.session-token',
+          '__Secure-next-auth.session-token',
+          'next-auth.csrf-token',
+          'next-auth.callback-url',
+        ]
+        for (const name of clientCookies) {
+          document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`
+          document.cookie = `${name}=; path=/; domain=${window.location.hostname}; expires=Thu, 01 Jan 1970 00:00:00 GMT`
+        }
+        localStorage.clear()
+        sessionStorage.clear()
+      } catch {}
+
       setSession(null)
-      localStorage.removeItem('remeet_onboarded')
-      await nextAuthSignOut({
-        callbackUrl: redirectTo,
-      })
+
+      // 3. Clear NextAuth session
+      try {
+        await nextAuthSignOut({
+          redirect: false,
+        })
+      } catch {}
+
+      // 4. Force browser immediately to the landing page, quitting the dashboard
+      window.location.href = redirectTo
     } catch (err) {
       console.error('Sign out error:', err)
+      window.location.href = '/'
     } finally {
       setLoading(false)
     }
   }
 
   const switchRole = async (nextRole: Role) => {
+    // Patients cannot access any other role
+    if (role === 'patient') {
+      console.warn('Patients are not permitted to switch roles.')
+      return
+    }
+
     try {
       const res = await fetch('/api/auth/switch-role', {
         method: 'POST',

@@ -16,9 +16,21 @@ export const SESSION_MAX_AGE = JWT_MAX_AGE_SECONDS
 /**
  * Pre-configured accounts for instant access and demo environments.
  */
+export const DEMO_ADMIN_TOKEN = 'REMEET-ADMIN-TOKEN-2026'
+
 export const DEMO_ACCOUNTS: Record<string, AuthUser> = {
   admin: {
     id: 'usr_admin_01',
+    name: 'Hospital Administrator',
+    email: 'admin@remeet.health',
+    role: 'admin',
+    provider: 'demo',
+    image: '/images/doctors/doc_02.jpg',
+    designation: 'Chief Medical Director',
+    department: 'Hospital Administration',
+  },
+  adminWork: {
+    id: 'usr_admin_02',
     name: 'Hospital Administrator',
     email: 'iambotforwork72@gmail.com',
     role: 'admin',
@@ -51,7 +63,7 @@ export const DEMO_ACCOUNTS: Record<string, AuthUser> = {
     id: 'usr_patient_01',
     name: 'Michael Ross',
     email: 'patient@remeet.health',
-    role: 'staff',
+    role: 'patient',
     provider: 'demo',
     image: '/images/doctors/doc_04.jpg',
     designation: 'Verified Patient',
@@ -227,17 +239,54 @@ export async function updateSessionRole(role: Role, response?: NextResponse): Pr
 }
 
 /**
- * Clears the session cookie and signs the user out.
+ * Clears all session cookies and signs the user out completely.
  */
 export async function destroySession(response?: NextResponse): Promise<void> {
+  const cookieNames = [
+    JWT_COOKIE_NAME,
+    'remeet_token',
+    'remeet_jwt',
+    ROLE_COOKIE,
+    'remeet_role',
+    'next-auth.session-token',
+    '__Secure-next-auth.session-token',
+    'next-auth.csrf-token',
+    'next-auth.callback-url',
+    'next-auth.pkce.code_verifier',
+  ]
+
   try {
     const jar = await cookies()
-    jar.delete(JWT_COOKIE_NAME)
-    jar.delete(ROLE_COOKIE)
+    const all = jar.getAll()
+    for (const c of all) {
+      if (c.name.startsWith('next-auth') || c.name.startsWith('__Secure-next-auth') || c.name.startsWith('remeet_')) {
+        cookieNames.push(c.name)
+      }
+    }
+    const unique = Array.from(new Set(cookieNames))
+    for (const name of unique) {
+      jar.delete(name)
+    }
   } catch {}
 
   if (response) {
-    response.cookies.delete(JWT_COOKIE_NAME)
-    response.cookies.delete(ROLE_COOKIE)
+    const unique = Array.from(new Set(cookieNames))
+    for (const name of unique) {
+      response.cookies.delete(name)
+      response.cookies.set(name, '', {
+        maxAge: 0,
+        path: '/',
+        httpOnly: true,
+        sameSite: 'lax',
+        expires: new Date(0),
+      })
+      response.cookies.set(name, '', {
+        maxAge: 0,
+        path: '/',
+        httpOnly: false,
+        sameSite: 'lax',
+        expires: new Date(0),
+      })
+    }
   }
 }
