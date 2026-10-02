@@ -18,8 +18,13 @@ import { Button } from '@/components/ui/button'
 import { getVerificationRequests, approveVerificationRequest } from '@/lib/data/verifications'
 import type { DoctorVerificationRequest } from '@/lib/data/types'
 import { sendDoctorApprovalOtpEmail } from '@/lib/email'
+import { useAuth } from '@/lib/auth/context'
+import { useRouter } from 'next/navigation'
+import { homeFor } from '@/lib/auth/role-meta'
 
 export default function AdminVerificationsPage() {
+  const { role, isLoading: authLoading, isAuthenticated } = useAuth()
+  const router = useRouter()
   const [requests, setRequests] = useState<DoctorVerificationRequest[]>([])
   const [activeTab, setActiveTab] = useState<'all' | 'doctor' | 'staff'>('all')
   const [loading, setLoading] = useState(true)
@@ -27,14 +32,33 @@ export default function AdminVerificationsPage() {
   const [notification, setNotification] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchRequests()
-  }, [])
+    if (!authLoading) {
+      if (!isAuthenticated) {
+        router.replace('/sign-in?redirect=/admin/verifications')
+      } else if (role !== 'admin') {
+        router.replace(homeFor(role))
+      } else {
+        fetchRequests()
+      }
+    }
+  }, [authLoading, isAuthenticated, role, router])
 
   const fetchRequests = async () => {
     setLoading(true)
     const data = await getVerificationRequests()
     setRequests([...data])
     setLoading(false)
+  }
+
+  if (authLoading || !isAuthenticated || role !== 'admin') {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-3 text-ink-soft">
+          <div className="size-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+          <p className="text-xs">Verifying administrator authorization...</p>
+        </div>
+      </div>
+    )
   }
 
   const handleApprove = async (req: DoctorVerificationRequest) => {
